@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { Users, ChevronLeft, ChevronRight } from "lucide-react";
 import { api } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
@@ -15,7 +16,7 @@ export function UsersPage() {
       api(`/admin/users?page=${page}&size=20`, { token, signal }),
   });
   return (
-    <main className="page">
+    <main className="page management-page">
       <div className="page-heading">
         <div>
           <span className="eyebrow">ADMINISZTRÁCIÓ</span>
@@ -43,6 +44,7 @@ export function UsersPage() {
                   <th>E-mail-cím</th>
                   <th>Szerepkör</th>
                   <th>Állapot</th>
+                  <th>Szerkesztés</th>
                 </tr>
               </thead>
               <tbody>
@@ -63,6 +65,15 @@ export function UsersPage() {
                       >
                         {user.enabled ? "Aktív" : "Letiltva"}
                       </span>
+                    </td>
+                    <td>
+                      <Link
+                        className="button secondary"
+                        to={`/felhasznalok/${user.id}`}
+                        aria-label={`${user.displayName} szerkesztése`}
+                      >
+                        Szerkesztés
+                      </Link>
                     </td>
                   </tr>
                 ))}

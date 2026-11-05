@@ -1,0 +1,94 @@
+.loan-panel {
+  margin: 0 0 24px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 25px;
+}
+.loan-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.loan-heading h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  margin: 0;
+}
+.loan-panel h3 {
+  font-size: 13px;
+}
+.loan-panel .detail-facts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 32px;
+}
+.loan-panel .decision-panel fieldset {
+  gap: 16px;
+}
+.loan-panel select,
+.loan-panel input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #d6dfcf;
+  border-radius: 8px;
+  padding: 12px;
+  background: #fff;
+  color: #35462e;
+  font: inherit;
+  font-size: 12px;
+}
+.loan-warning {
+  border-left: 3px solid #ad7929;
+  background: #fff6e2;
+  color: #75541c;
+  padding: 14px;
+  font-size: 12px;
+  line-height: 1.8;
+  margin: 12px 0;
+  border-radius: 5px;
+}
+.maintenance-note {
+  padding: 16px;
+  background: #f1f4ec;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+.maintenance-note h3 {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  margin: 0 0 12px;
+}
+.maintenance-note p {
+  font-size: 12px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+.loan-refresh-note {
+  margin-top: 22px;
+  padding-bottom: 30px;
+}
+.reservation-table .reservation-status + .reservation-status {
+  margin-top: 6px;
+}
+@media (max-width: 600px) {
+  .loan-panel .detail-facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .loan-panel {
+    padding: 18px;
+  }
+  .loan-panel .detail-facts > div {
+    gap: 15px;
+  }
+  .loan-panel dd {
+    overflow-wrap: anywhere;
+    text-align: right;
+  }
+}

@@ -91,6 +91,13 @@ export function CatalogPage({ management = false }) {
           <Boxes size={30} strokeWidth={1.4} />
         </span>
       </div>
+      {management && (
+        <div className="management-toolbar">
+          <Link className="button primary" to="/kezeles/uj">
+            Új eszköz felvétele
+          </Link>
+        </div>
+      )}
       <section className="catalog-banner">
         <div>
           <span className="small-label">A JÓ ÖTLETEKNEK HELYET ADUNK</span>
@@ -240,7 +247,14 @@ export function CatalogPage({ management = false }) {
                       <MapPin size={14} />
                       {item.location.name}
                     </span>
-                    {item.lifecycle === "ACTIVE" ? (
+                    {management ? (
+                      <Link
+                        to={`/kezeles/${item.id}`}
+                        aria-label={`${item.name} szerkesztése`}
+                      >
+                        <ArrowRight size={19} />
+                      </Link>
+                    ) : item.lifecycle === "ACTIVE" ? (
                       <Link
                         to={`/eszkozok/${item.id}`}
                         aria-label={`${item.name} részletei`}

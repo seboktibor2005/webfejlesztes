@@ -6,12 +6,17 @@ import { api } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
 import { ErrorState } from "../components/Feedback";
 import { formatDate, reservationLabels } from "../reservations/format";
+import { LoanPanel } from "../loans/LoanPanel";
 
 const eventLabels = {
   RESERVATION_CREATED: "Igény benyújtva",
   RESERVATION_APPROVED: "Igény jóváhagyva",
   RESERVATION_REJECTED: "Igény elutasítva",
   RESERVATION_CANCELLED: "Foglalás visszavonva",
+  LOAN_ISSUED: "Eszköz átadva",
+  LOAN_RETURNED: "Eszköz visszavéve",
+  MAINTENANCE_OPENED: "Karbantartási zárolás létrehozva",
+  MAINTENANCE_CLOSED: "Karbantartás lezárva",
 };
 export function ReservationPage() {
   const { id } = useParams();
@@ -28,6 +33,7 @@ export function ReservationPage() {
   const [eventPage, setEventPage] = useState(0);
   const detail = useQuery({
     queryKey: ["reservation", id],
+    refetchInterval: 30_000,
     queryFn: ({ signal }) => api(`/reservations/${id}`, { token, signal }),
   });
   const events = useQuery({
@@ -91,6 +97,7 @@ export function ReservationPage() {
   const editable = ["REQUESTED", "APPROVED"].includes(reservation.status);
   const cancelAllowed =
     editable &&
+    !reservation.loan &&
     ((own && Date.parse(reservation.startsAt) > Date.now()) ||
       (manager && !own));
   const reasonRequired = action === "reject" || (action === "cancel" && !own);
@@ -131,6 +138,7 @@ export function ReservationPage() {
           {notice}
         </div>
       )}
+      <LoanPanel reservation={reservation} />
       <div className="reservation-detail-grid">
         <section className="reservation-summary-panel">
           <h2>Az igény részletei</h2>

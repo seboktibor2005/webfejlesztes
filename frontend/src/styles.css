@@ -445,6 +445,12 @@ p {
   display: flex;
   flex-direction: column;
   z-index: 20;
+  overflow-y: auto;
+}
+@media (max-height: 820px) {
+  .sidebar-note {
+    display: none;
+  }
 }
 .sidebar .brand {
   font-size: 25px;

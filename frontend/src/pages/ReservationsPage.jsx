@@ -21,6 +21,7 @@ export function ReservationsPage({ management = false }) {
   if (status) params.set("status", status);
   const result = useQuery({
     queryKey: ["reservations", management, params.toString()],
+    refetchInterval: 30_000,
     queryFn: ({ signal }) =>
       api(`${management ? "/management" : "/me"}/reservations?${params}`, {
         token,
@@ -142,6 +143,18 @@ export function ReservationsPage({ management = false }) {
                       >
                         {reservationLabels[reservation.status]}
                       </span>
+                      {reservation.hasOpenLoan && (
+                        <span
+                          className={`reservation-status ${reservation.overdue ? "status-rejected" : "status-approved"}`}
+                        >
+                          {reservation.overdue ? "Késésben" : "Átadva"}
+                        </span>
+                      )}
+                      {reservation.atRisk && (
+                        <span className="reservation-status status-requested">
+                          Átadás veszélyeztetett
+                        </span>
+                      )}
                     </td>
                     <td>
                       <Link

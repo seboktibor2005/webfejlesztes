@@ -6,4 +6,7 @@ import org.springframework.data.jpa.repository.*;
 public interface AuditEventRepository extends JpaRepository<AuditEvent, Long> {
     @EntityGraph(attributePaths = "actor")
     Page<AuditEvent> findAllByReservation_IdOrderByOccurredAtAscIdAsc(Long reservationId, Pageable page);
+
+    @EntityGraph(attributePaths = "actor")
+    Page<AuditEvent> findAllByEquipment_IdOrderByOccurredAtAscIdAsc(Long equipmentId, Pageable page);
 }

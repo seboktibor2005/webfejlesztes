@@ -10,6 +10,8 @@ import {
   ArrowUpRight,
   CalendarDays,
   ListChecks,
+  PackageCheck,
+  Wrench,
 } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { Brand } from "./Brand";
@@ -90,6 +92,18 @@ export function AppLayout() {
             <NavLink to="/kezeles" onClick={() => setOpen(false)}>
               <ClipboardList size={20} />
               Eszközállomány
+            </NavLink>
+          )}
+          {user.role !== "USER" && (
+            <NavLink to="/kolcsonzesek" onClick={() => setOpen(false)}>
+              <PackageCheck size={20} />
+              Kölcsönzések
+            </NavLink>
+          )}
+          {user.role !== "USER" && (
+            <NavLink to="/karbantartasok" onClick={() => setOpen(false)}>
+              <Wrench size={20} />
+              Karbantartások
             </NavLink>
           )}
           {user.role === "ADMIN" && (

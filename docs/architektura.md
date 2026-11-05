@@ -15,12 +15,13 @@ erDiagram
   APP_USER o|--o{ LOAN : visszavesz
   EQUIPMENT_ITEM ||--o{ MAINTENANCE_PERIOD : karbantartas
   APP_USER ||--o{ MAINTENANCE_PERIOD : rogzit
+  LOAN o|--o| MAINTENANCE_PERIOD : serulesi_zar
   APP_USER o|--o{ AUDIT_EVENT : vegrehajt
   EQUIPMENT_ITEM o|--o{ AUDIT_EVENT : eszkozelozmeny
   RESERVATION o|--o{ AUDIT_EVENT : foglalasi_elozmeny
 ```
 
-A részletes mezőlista és adatbáziskorlátok forrása: backend/src/main/resources/db/migration/V1\_\_initial_schema.sql. Az első két egységben hat táblához van JPA-entitás (felhasználó, kategória, helyszín, eszköz, foglalás, auditesemény). A kölcsönzés és karbantartás szerkesztése később készül; a foglalási modul a már létező táblák blokkoló adatait natív lekérdezéssel ellenőrzi. A Flyway saját schema history táblája technikai metaadat, nem kilencedik üzleti entitás.
+A részletes mezőlista és adatbáziskorlátok forrása: backend/src/main/resources/db/migration/V1\_\_initial_schema.sql, illetve a V2\_\_loan_safety_maintenance.sql bővítés. Mind a nyolc üzleti táblához van JPA-entitás. A V2 opcionális, egyedi loan_id kapcsolatot ad a karbantartáshoz: egy sérült visszavétel egy biztonsági zárat hoz létre. A Flyway saját schema history táblája technikai metaadat, nem kilencedik üzleti entitás.
 
 ## ADR-001: PostgreSQL és migráció
 
@@ -28,7 +29,7 @@ Az adatok nem veszhetnek el újraindításkor. A Flyway hozza létre a sémát; 
 
 ## ADR-002: Egyszerű moduláris monolit
 
-Egy backend, funkciónként auth/user/equipment/reservation/audit/bootstrap/common csomagok. A későbbi loan/maintenance/dashboard csomagok akkor jönnek létre, amikor valódi funkciójuk elkészül. Nincs generikus CRUD-service, repository-wrapper vagy minden service elé üres interfész. A módosításokat a service tranzakciója fogja össze. Az admin felhasználólistát is service készíti DTO-vá, a controller csak HTTP-adapter.
+Egy backend, funkciónként auth/user/equipment/reservation/loan/maintenance/audit/bootstrap/common csomagok. A dashboard későbbi egység. Nincs generikus CRUD-service, repository-wrapper vagy minden service elé üres interfész. A módosításokat a service tranzakciója fogja össze. Az admin felhasználólistát is service készíti DTO-vá, a controller csak HTTP-adapter. A sérülési karbantartás létrehozását a visszavétellel a LoanService fogja össze; az általános karbantartást, lemondást és minden lezárást az önálló MaintenanceService kezeli.
 
 ## ADR-003: DTO és MapStruct
 
@@ -56,6 +57,22 @@ Az @Version és a kötelező version requestmező az elavult felületből küld�
 
 A datetime-local értéket explicit Europe/Budapest zónával alakítjuk UTC-vé, függetlenül a böngésző helyi zónájától. A nyári/téli óraátállítás hiányzó vagy kétértelmű perceit visszautasítjuk, és másik időpont megadását kérjük. A backend Instantot tárol, egész percet és időtartamot validál; az API offsetes ISO-8601 értéket fogad. A szerveroldali Clock befecskendezett, így az időhatárok tesztelhetők.
 
+## ADR-009: Kölcsönzés és sérülési zárolás
+
+A tényleges átadás külön Loan rekord, a foglalás APPROVED állapotát nem helyettesíti új, kevert enum. Visszavételkor a Loan lezárul és a foglalás COMPLETED lesz. A Loanhoz nem szükséges külön verzióoszlop, mert minden író parancs az eszközsor zárolása után újraolvassa. Két nyitott kölcsönzést részleges UNIQUE index, két átadást ugyanarra a foglalásra egyedi reservation_id is tilt.
+
+A késés Clockból származtatott, nem tárolt állapot. Visszavétel után a tényleges visszavételi időhöz viszonyítjuk; így a történeti késés nem növekszik. Sérüléskor a visszavétellel és eseményekkel egy tranzakcióban OPEN karbantartás készül, egyedi loan_id kapcsolattal. A tervezett vég nem zárja le automatikusan.
+
+A foglalási listák kölcsönzéseit az oldal azonosítóira csoportosan töltjük be; a veszélyeztetettséget szintén egy csoportos lekérdezés adja. A MapStruct a tényleges kölcsönzési kapcsolatokat is leképezi. A frontend szerveradat-lekérdezései30 másodpercenként frissülnek, a parancsok után azonnal érvénytelenítjük az érintett listákat, adatlapot és eseménytörténetet. A dátummezők input és change eseményeit is kezeljük az ellenőrzött böngészők közötti eltérés miatt.
+
+## ADR-010: Kezelési műveletek és utolsó aktív admin
+
+A karbantartás általános életciklusa önálló MaintenanceService-be került; a korábbi lezárási API szerződése megmaradt. Az EquipmentManagementService az eszközírásokat és a kezelői előzményolvasást fogja össze. Minden eszközt érintő írás ugyanazt az eszközsort zárolja, a teljes változó állapot beolvasása előtt. A requestek nem állíthatnak lifecycle-t vagy döntési metaadatot.
+
+A V3 a felhasználóhoz @Version oszlopot ad. Adminmódosítás és kijelentkezés is növeli a verziót; tényleges adminmódosításkor a tokenVersion is nő. Az utolsó aktív admin invariánsát a felhasználó-adminisztrációs parancsok közös,173528/1 kulcsú pg_advisory_xact_lock zára védi. A zárolás után frissen ellenőrizzük az eljáró admin jogát és az aktív adminok számát, majd sorzárral védett felhasználót módosítunk. A zár tranzakcióvégig él és automatikusan feloldódik. A szerepet létrehozó/módosító jövőbeli alkalmazásútvonalaknak is ezt kell használniuk; közvetlen SQL nincs az alkalmazás műveletei között.
+
+A kliens szerkesztés közben megőrzi a kezdeti verziót. Konfliktusnál a piszkozat megmarad; friss adatok betöltése explicit űrlap-visszaállítás. Saját felhasználó-módosítás után a kliens munkamenetét és query cache-ét is töröljük. A felhasználócélt kezelő általános auditbővítés külön feladat lenne; jelenleg az audit eszköz/foglalás alapú.
+
 ## Források
 
 - https://docs.spring.io/spring-security/reference/servlet/oauth2/resource-server/jwt.html
@@ -65,3 +82,5 @@ A datetime-local értéket explicit Europe/Budapest zónával alakítjuk UTC-vé
 - https://www.postgresql.org/docs/current/explicit-locking.html
 - https://docs.spring.io/spring-data/jpa/reference/jpa/locking.html
 - https://www.postgresql.org/docs/current/transaction-iso.html
+- https://www.postgresql.org/docs/current/indexes-partial.html
+- https://www.postgresql.org/docs/current/functions-admin.html#FUNCTIONS-ADVISORY-LOCKS

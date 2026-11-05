@@ -16,6 +16,14 @@ import { EquipmentPage } from "./pages/EquipmentPage";
 import { UsersPage } from "./pages/UsersPage";
 import { ReservationsPage } from "./pages/ReservationsPage";
 import { ReservationPage } from "./pages/ReservationPage";
+import { LoansPage } from "./pages/LoansPage";
+import { EquipmentEditorPage } from "./management/EquipmentEditorPage";
+import { UserEditorPage } from "./management/UserEditorPage";
+import {
+  MaintenancePage,
+  MaintenanceCreatePage,
+  MaintenanceDetailPage,
+} from "./management/MaintenancePages";
 
 const client = new QueryClient({
   defaultOptions: { queries: { retry: false, staleTime: 30_000 } },
@@ -67,6 +75,21 @@ export default function App() {
                 />
                 <Route path="/foglalasok/:id" element={<ReservationPage />} />
                 <Route element={<Protected roles={["MANAGER", "ADMIN"]} />}>
+                  <Route path="/kolcsonzesek" element={<LoansPage />} />
+                  <Route path="/kezeles/uj" element={<EquipmentEditorPage />} />
+                  <Route
+                    path="/kezeles/:id"
+                    element={<EquipmentEditorPage />}
+                  />
+                  <Route path="/karbantartasok" element={<MaintenancePage />} />
+                  <Route
+                    path="/karbantartasok/uj"
+                    element={<MaintenanceCreatePage />}
+                  />
+                  <Route
+                    path="/karbantartasok/:id"
+                    element={<MaintenanceDetailPage />}
+                  />
                   <Route
                     path="/elbiralas"
                     element={<ReservationsPage key="review" management />}
@@ -78,6 +101,10 @@ export default function App() {
                 </Route>
                 <Route element={<Protected roles={["ADMIN"]} />}>
                   <Route path="/felhasznalok" element={<UsersPage />} />
+                  <Route
+                    path="/felhasznalok/:id"
+                    element={<UserEditorPage />}
+                  />
                 </Route>
               </Route>
             </Route>

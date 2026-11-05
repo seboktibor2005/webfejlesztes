@@ -30,8 +30,13 @@ public class AuditEvent {
 
     public AuditEvent(Reservation reservation, AppUser actor, String eventType,
             String fromState, String toState, String note, Instant occurredAt) {
+        this(reservation.getEquipment(), reservation, actor, eventType, fromState, toState, note, occurredAt);
+    }
+
+    public AuditEvent(EquipmentItem equipment, Reservation reservation, AppUser actor, String eventType,
+            String fromState, String toState, String note, Instant occurredAt) {
         this.reservation = reservation;
-        this.equipment = reservation.getEquipment();
+        this.equipment = equipment;
         this.actor = actor;
         this.eventType = eventType;
         this.fromState = fromState;

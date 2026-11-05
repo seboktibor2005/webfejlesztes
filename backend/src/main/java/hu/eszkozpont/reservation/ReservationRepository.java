@@ -5,6 +5,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.*;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.List;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Long>, JpaSpecificationExecutor<Reservation> {
     @Override
@@ -37,4 +38,21 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long>,
 
     @Query(value = "select exists(select 1 from loan where reservation_id = :reservationId)", nativeQuery = true)
     boolean hasLoan(Long reservationId);
+
+    @Query(value = """
+            select r.id from reservation r
+             where r.id in (:ids) and r.status = 'APPROVED'
+               and not exists(select 1 from loan own_loan where own_loan.reservation_id = r.id)
+               and (exists(select 1 from loan l where l.equipment_id = r.equipment_id
+                     and l.returned_at is null and l.due_at < :now)
+                 or exists(select 1 from maintenance_period m where m.equipment_id = r.equipment_id and m.status = 'OPEN'
+                     and (m.starts_at <= :now or (m.starts_at < r.ends_at and m.ends_at > r.starts_at))))
+            """, nativeQuery = true)
+    List<Long> findAtRiskIds(List<Long> ids, Instant now);
+
+    @Query("select count(r) > 0 from Reservation r where r.equipment.id = :equipmentId and r.status in (hu.eszkozpont.reservation.ReservationStatus.REQUESTED, hu.eszkozpont.reservation.ReservationStatus.APPROVED) and r.endsAt > :now")
+    boolean hasLiveReservation(Long equipmentId, Instant now);
+
+    @Query(value = "select exists(select 1 from reservation where equipment_id = :equipmentId and status = 'APPROVED' and starts_at < :endsAt and ends_at > :startsAt and ends_at > :now)", nativeQuery = true)
+    boolean hasApprovedMaintenanceConflict(Long equipmentId, Instant startsAt, Instant endsAt, Instant now);
 }

@@ -45,6 +45,7 @@ export function AuthProvider({ children }) {
         notice,
         login,
         logout,
+        endSession: clearSession,
       }}
     >
       {children}

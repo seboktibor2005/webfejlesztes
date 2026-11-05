@@ -78,4 +78,4 @@ Az első egység tesztjei Docker nélkül, natív PostgreSQL 18.3-mal futnak (Zo
 3. **Kölcsönzés és kezelés:** átadás/visszavétel, karbantartás, eszköz- és felhasználómódosítás.
 4. **Extrák és védés:** naptár, dashboard, teljes folyamat tesztje, README, próbabemutató.
 
-A megvalósítás az 1–2. egységet tartalmazza. Az igénylés, saját lista/adatlap, kezelői elbírálás, visszavonás, eseménytörténet és párhuzamos ütközésvizsgálat működik. Az automatikus lejárati feldolgozó és az időszakra szűrt katalógus egyelőre tervezett. A későbbi DTO-k és útvonalak az API-tervben külön jelölt szerződéstervek.
+A megvalósítás az alapokat, a foglalási/kölcsönzési folyamatot és a kezelési funkciókat tartalmazza. A karbantartási felvitel/lista/adatlap/lezárás/lemondás, eszközfelvitel/szerkesztés/kivonás és felhasználói név/szerep/tiltás adminmódosítása elkészült. A párhuzamos adminmódosítások mellett is megmarad egy aktív admin. A kategória/helyszín CRUD, automatikus lejárati feldolgozó, időszakra szűrt katalógus, naptár és dashboard még tervezett. A későbbi DTO-k és útvonalak az API-tervben külön jelölt szerződéstervek.

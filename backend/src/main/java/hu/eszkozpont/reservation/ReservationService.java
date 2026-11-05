@@ -4,6 +4,7 @@ import hu.eszkozpont.audit.*;
 import hu.eszkozpont.common.*;
 import hu.eszkozpont.equipment.*;
 import hu.eszkozpont.user.*;
+import hu.eszkozpont.loan.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.*;
@@ -14,6 +15,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import java.time.*;
 import java.util.Objects;
+import java.util.Map;
+import java.util.Set;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Validated
@@ -26,10 +32,12 @@ public class ReservationService {
     private final AuditEventRepository events;
     private final AuditEventMapper eventMapper;
     private final Clock clock;
+    private final LoanRepository loans;
+    private final LoanMapper loanMapper;
 
     public ReservationService(ReservationRepository reservations, EquipmentRepository equipment,
             UserRepository users, ReservationMapper mapper, AuditEventRepository events,
-            AuditEventMapper eventMapper, Clock clock) {
+            AuditEventMapper eventMapper, Clock clock, LoanRepository loans, LoanMapper loanMapper) {
         this.reservations = reservations;
         this.equipment = equipment;
         this.users = users;
@@ -37,6 +45,8 @@ public class ReservationService {
         this.events = events;
         this.eventMapper = eventMapper;
         this.clock = clock;
+        this.loans = loans;
+        this.loanMapper = loanMapper;
     }
 
     @Transactional
@@ -54,7 +64,7 @@ public class ReservationService {
         reservation.setPurpose(request.purpose());
         reservations.saveAndFlush(reservation);
         recordEvent(reservation, actor, "RESERVATION_CREATED", null, null, now);
-        return mapper.toResponse(reservation);
+        return response(reservation);
     }
 
     public PageResponse<ReservationSummaryResponse> mine(long actorId, ReservationStatus status,
@@ -70,7 +80,7 @@ public class ReservationService {
     }
 
     public ReservationResponse get(long actorId, long id) {
-        return mapper.toResponse(readable(actorId, id));
+        return response(readable(actorId, id));
     }
 
     public PageResponse<AuditEventResponse> history(long actorId, long id, int page, int size) {
@@ -154,8 +164,17 @@ public class ReservationService {
             default -> throw error(HttpStatus.BAD_REQUEST, "INVALID_SORT", "Ismeretlen rendezési feltétel.");
         };
         if (status != null) scope = scope.and((root, query, cb) -> cb.equal(root.get("status"), status));
-        return PageResponse.of(reservations.findAll(scope, PageRequest.of(page, size, order.and(Sort.by("id"))))
-                .map(mapper::toSummary));
+        var result = reservations.findAll(scope, PageRequest.of(page, size, order.and(Sort.by("id"))));
+        var ids = result.getContent().stream().map(Reservation::getId).toList();
+        var now = clock.instant();
+        Map<Long, Loan> byReservation = ids.isEmpty() ? Map.of() : loans.findAllByReservation_IdIn(ids).stream()
+                .collect(Collectors.toMap(loan -> loan.getReservation().getId(), Function.identity()));
+        Set<Long> risks = ids.isEmpty() ? Set.of() : Set.copyOf(reservations.findAtRiskIds(ids, now));
+        return PageResponse.of(result.map(reservation -> {
+            var loan = byReservation.get(reservation.getId());
+            boolean open = loan != null && loan.getReturnedAt() == null;
+            return mapper.toSummary(reservation, open, open && loan.getDueAt().isBefore(now), risks.contains(reservation.getId()));
+        }));
     }
 
     private Reservation readable(long actorId, long id) {
@@ -207,7 +226,14 @@ public class ReservationService {
             ReservationStatus previous, String note, Instant now) {
         reservations.flush();
         recordEvent(reservation, actor, event, previous, note, now);
-        return mapper.toResponse(reservation);
+        return response(reservation);
+    }
+
+    private ReservationResponse response(Reservation reservation) {
+        var now = clock.instant();
+        var loan = loans.findByReservation_Id(reservation.getId()).map(value -> loanMapper.toResponse(value, now)).orElse(null);
+        boolean atRisk = !reservations.findAtRiskIds(List.of(reservation.getId()), now).isEmpty();
+        return mapper.toResponse(reservation, loan, atRisk);
     }
 
     private void recordEvent(Reservation reservation, AppUser actor, String event,

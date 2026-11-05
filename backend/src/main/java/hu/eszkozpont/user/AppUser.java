@@ -24,4 +24,6 @@ public class AppUser extends AuditedEntity {
     private boolean enabled = true;
     @Column(nullable = false)
     private long tokenVersion;
+    @Version
+    private long version;
 }

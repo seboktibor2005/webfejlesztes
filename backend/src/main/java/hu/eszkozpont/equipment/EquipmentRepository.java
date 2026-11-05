@@ -7,6 +7,7 @@ import java.util.Optional;
 import jakarta.persistence.LockModeType;
 
 public interface EquipmentRepository extends JpaRepository<EquipmentItem, Long>, JpaSpecificationExecutor<EquipmentItem> {
+    boolean existsByInventoryCode(String inventoryCode);
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select e from EquipmentItem e where e.id = :id")
     Optional<EquipmentItem> lockById(Long id);

@@ -39,7 +39,8 @@ export function ReservationForm({ equipmentId }) {
   const errorFor = (name) =>
     mutation.error?.errors?.find((error) => error.field === name)?.message;
   function update(event) {
-    setValues({ ...values, [event.target.name]: event.target.value });
+    const { name, value } = event.target;
+    setValues((previous) => ({ ...previous, [name]: value }));
     mutation.reset();
   }
   return (
@@ -71,6 +72,7 @@ export function ReservationForm({ equipmentId }) {
                 name="startsAt"
                 value={values.startsAt}
                 onChange={update}
+                onInput={update}
                 required
                 step="60"
                 aria-invalid={!!errorFor("startsAt")}
@@ -86,6 +88,7 @@ export function ReservationForm({ equipmentId }) {
                 name="endsAt"
                 value={values.endsAt}
                 onChange={update}
+                onInput={update}
                 required
                 step="60"
                 aria-invalid={!!errorFor("endsAt")}

@@ -2,13 +2,17 @@
 
 Magyar nyelvű egyetemi eszközkatalógus, foglalás- és kölcsönzéskezelő. Spring Boot + Java backend, React + JavaScript frontend, PostgreSQL adatbázis.
 
-## Jelenlegi állapot: 2. fejlesztési egység
+## Jelenlegi állapot: kölcsönzés és kezelési funkciók
 
 **Elkészült:** regisztráció, JWT-belépés, valódi kijelentkezés/tokenvisszavonás, három szerepkör, eszközkatalógus, adatlap, keresés, kategória/helyszín szűrés, rendezés, lapozás, kezelői teljes leltárlista és admin felhasználólista. Magyar, reszponzív felület. Nyolctáblás Flyway-séma. PostgreSQL-alapú integrációs tesztek és frontendtesztek.
 
 **A foglalási folyamat is elkészült:** igénylés az eszközadatlapról, saját foglalások, kezelői elbírálás, jóváhagyás, indokolt elutasítás és visszavonás, verzióellenőrzés és eseménytörténet. A PostgreSQL-sorzár védi a párhuzamos jóváhagyásokat. Az űrlap budapesti időben kezeli az időpontokat, óraátállításkor elutasítja a kétértelmű és nem létező időpontokat.
 
-**Következik:** átadás/visszavétel, karbantartás kezelőfelülete és szerkesztési műveletek, naptár, dashboard és az átvétel nélkül lejárt igények automatikus lezárása. A meglévő karbantartási és késedelmes kölcsönzési adatok már blokkolják az igénylést/jóváhagyást, de ezek még nem rögzíthetők a felületen.
+**Kölcsönzés:** időablakhoz kötött átadás, jó/használt/sérült állapotú visszavétel, késés és késve visszahozott állapot, kezelői munkalista. Sérüléskor automatikus karbantartási zárolás, kezelői lezárással. A veszélyeztetett későbbi jóváhagyások figyelmeztetést kapnak. Átadás/visszavétel és naplózás közös tranzakcióban, párhuzamos műveletekre is tesztelve.
+
+**Kezelés:** kereshető eszközválasztással kézi karbantartási felvitel, lista/adatlap, lemondás/lezárás és ütközésvédelem. Eszközfelvitel, verziózott szerkesztés, indokolt kivonás és eszköztörténet. Adminisztrátori név/szerep/tiltás módosítás, tokenvisszavonás, párhuzamos kérések mellett is védett utolsó aktív admin.79 backend- és29 frontendteszt.
+
+**Következik:** kategória/helyszín törzsadatkezelés, naptár, dashboard és az átvétel nélkül lejárt igények automatikus lezárása. Ezek még nem működő API-funkciók.
 
 ## Tervezési dokumentumok
 
@@ -18,6 +22,8 @@ Magyar nyelvű egyetemi eszközkatalógus, foglalás- és kölcsönzéskezelő. 
 - [Adatmodell és technikai döntések](docs/architektura.md)
 - [Az első egység magyarázata és kézi ellenőrzése](docs/elso-fejlesztesi-egyseg.md)
 - [Foglalás és elbírálás – működés és ellenőrzés](docs/masodik-fejlesztesi-egyseg.md)
+- [Átadás, visszavétel és késések – működés és ellenőrzés](docs/harmadik-fejlesztesi-egyseg.md)
+- [Karbantartás, eszköz- és felhasználószerkesztés](docs/kezelesi-fejlesztesi-egyseg.md)
 
 ## Helyi indítás Windows alatt, Docker nélkül
 

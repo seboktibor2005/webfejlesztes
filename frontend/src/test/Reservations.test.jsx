@@ -57,10 +57,10 @@ describe("foglalás és elbírálás felülete", () => {
       vi.fn().mockResolvedValue(response({ id: 42 }, 201)),
     );
     renderPage(<ReservationForm equipmentId={1} />);
-    fireEvent.change(screen.getByLabelText("Átvétel időpontja"), {
+    fireEvent.input(screen.getByLabelText("Átvétel időpontja"), {
       target: { value: "2026-11-12T09:00" },
     });
-    fireEvent.change(screen.getByLabelText("Visszahozás időpontja"), {
+    fireEvent.input(screen.getByLabelText("Visszahozás időpontja"), {
       target: { value: "2026-11-12T12:00" },
     });
     const user = userEvent.setup();
