@@ -20,7 +20,7 @@ erDiagram
   RESERVATION o|--o{ AUDIT_EVENT : foglalasi_elozmeny
 ```
 
-A részletes mezőlista és adatbáziskorlátok forrása: backend/src/main/resources/db/migration/V1\_\_initial_schema.sql. Az első egységben négy táblához van JPA-entitás (felhasználó, kategória, helyszín, eszköz); a négy munkafolyamat-tábla egyelőre migrált, üres sémaalap. A Flyway saját schema history táblája technikai metaadat, nem kilencedik üzleti entitás.
+A részletes mezőlista és adatbáziskorlátok forrása: backend/src/main/resources/db/migration/V1\_\_initial_schema.sql. Az első két egységben hat táblához van JPA-entitás (felhasználó, kategória, helyszín, eszköz, foglalás, auditesemény). A kölcsönzés és karbantartás szerkesztése később készül; a foglalási modul a már létező táblák blokkoló adatait natív lekérdezéssel ellenőrzi. A Flyway saját schema history táblája technikai metaadat, nem kilencedik üzleti entitás.
 
 ## ADR-001: PostgreSQL és migráció
 
@@ -28,7 +28,7 @@ Az adatok nem veszhetnek el újraindításkor. A Flyway hozza létre a sémát; 
 
 ## ADR-002: Egyszerű moduláris monolit
 
-Egy backend, funkciónként auth/user/equipment/bootstrap/common csomagok. A későbbi reservation/loan/maintenance/audit/dashboard csomagok akkor jönnek létre, amikor valódi funkciójuk elkészül. Nincs generikus CRUD-service, repository-wrapper vagy minden service elé üres interfész. A módosításokat a service tranzakciója fogja össze. Az admin felhasználólistát is service készíti DTO-vá, a controller csak HTTP-adapter.
+Egy backend, funkciónként auth/user/equipment/reservation/audit/bootstrap/common csomagok. A későbbi loan/maintenance/dashboard csomagok akkor jönnek létre, amikor valódi funkciójuk elkészül. Nincs generikus CRUD-service, repository-wrapper vagy minden service elé üres interfész. A módosításokat a service tranzakciója fogja össze. Az admin felhasználólistát is service készíti DTO-vá, a controller csak HTTP-adapter.
 
 ## ADR-003: DTO és MapStruct
 
@@ -46,6 +46,16 @@ A gépen van JDK, de nincs Docker és nincs elérhető normál PostgreSQL. A tes
 
 Minden látható termékszöveg magyar. Az enumkódokhoz magyar felirat tartozik. React Router védett útvonalak, AuthContext csak belépési állapothoz, TanStack Query szerveradatokhoz. A query cache kijelentkezéskor törlődik, így következő felhasználó nem látja az előző adatait. A token nem kerül tartós böngészőtárba. A katalógus lifecycle címkéje „Az eszköztárban”; nem ígér még nem ellenőrzött szabad időpontot.
 
+## ADR-007: Az eszközsor a foglalási írások közös zárja
+
+Igénylés, jóváhagyás, elutasítás és visszavonás először PESSIMISTIC_WRITE zárral olvassa az eszközsort. Döntésnél az első lekérdezés csak skalár eszközazonosítót tölt be; a foglalás entitása csak a zár megszerzése után kerül a persistence contextbe. PostgreSQL READ COMMITTED mellett az utána futó ütközésvizsgálat már látja az előző tranzakció végleges döntését. A zár csak azonos eszközön sorosít; a globális zárolás szükségtelen.
+
+Az @Version és a kötelező version requestmező az elavult felületből küldött parancsot is visszautasítja. A [kezdés,befejezés) intervallumok szomszédosak lehetnek; az átfedést startA < endB és endA > startB vizsgálja. A függő igény nem biztosít időszakot. Döntés és audit egy tranzakció; a frontend409 után frissíti a szerveradatokat. A későbbi kölcsönzés/karbantartás írásai ugyanezt az eszközsort kell zárolják, hogy megőrizzék az invariánst. Ez alkalmazásszintű garancia: közvetlen SQL-írás nem kerülheti meg a szolgáltatási szabályokat.
+
+## ADR-008: Budapesti dátumbevitel
+
+A datetime-local értéket explicit Europe/Budapest zónával alakítjuk UTC-vé, függetlenül a böngésző helyi zónájától. A nyári/téli óraátállítás hiányzó vagy kétértelmű perceit visszautasítjuk, és másik időpont megadását kérjük. A backend Instantot tárol, egész percet és időtartamot validál; az API offsetes ISO-8601 értéket fogad. A szerveroldali Clock befecskendezett, így az időhatárok tesztelhetők.
+
 ## Források
 
 - https://docs.spring.io/spring-security/reference/servlet/oauth2/resource-server/jwt.html
@@ -53,3 +63,5 @@ Minden látható termékszöveg magyar. Az enumkódokhoz magyar felirat tartozik
 - https://mapstruct.org/documentation/stable/reference/html/
 - https://github.com/zonkyio/embedded-postgres
 - https://www.postgresql.org/docs/current/explicit-locking.html
+- https://docs.spring.io/spring-data/jpa/reference/jpa/locking.html
+- https://www.postgresql.org/docs/current/transaction-iso.html

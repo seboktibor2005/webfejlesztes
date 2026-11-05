@@ -8,6 +8,8 @@ import {
   Menu,
   X,
   ArrowUpRight,
+  CalendarDays,
+  ListChecks,
 } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { Brand } from "./Brand";
@@ -74,6 +76,16 @@ export function AppLayout() {
             <Boxes size={20} />
             Eszközkatalógus
           </NavLink>
+          <NavLink to="/foglalasok" onClick={() => setOpen(false)}>
+            <CalendarDays size={20} />
+            Saját foglalások
+          </NavLink>
+          {user.role !== "USER" && (
+            <NavLink to="/elbiralas" onClick={() => setOpen(false)}>
+              <ListChecks size={20} />
+              Igények elbírálása
+            </NavLink>
+          )}
           {user.role !== "USER" && (
             <NavLink to="/kezeles" onClick={() => setOpen(false)}>
               <ClipboardList size={20} />

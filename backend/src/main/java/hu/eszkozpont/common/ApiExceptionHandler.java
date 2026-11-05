@@ -3,6 +3,8 @@ package hu.eszkozpont.common;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.PessimisticLockingFailureException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.http.*;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -51,6 +53,11 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     ProblemDetail handleConstraint(ConstraintViolationException exception) {
         return problem(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", "Ellenőrizd a megadott paramétereket.");
+    }
+
+    @ExceptionHandler({PessimisticLockingFailureException.class, ObjectOptimisticLockingFailureException.class})
+    ProblemDetail handleConcurrentChange(Exception exception) {
+        return problem(HttpStatus.CONFLICT, "CONCURRENT_CHANGE", "Az adatot másik művelet módosítja. Frissítsd az oldalt, és próbáld újra.");
     }
 
     @Override

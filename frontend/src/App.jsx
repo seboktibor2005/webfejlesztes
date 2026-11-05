@@ -14,6 +14,8 @@ import { AuthPage } from "./pages/AuthPage";
 import { CatalogPage } from "./pages/CatalogPage";
 import { EquipmentPage } from "./pages/EquipmentPage";
 import { UsersPage } from "./pages/UsersPage";
+import { ReservationsPage } from "./pages/ReservationsPage";
+import { ReservationPage } from "./pages/ReservationPage";
 
 const client = new QueryClient({
   defaultOptions: { queries: { retry: false, staleTime: 30_000 } },
@@ -59,7 +61,16 @@ export default function App() {
                   element={<CatalogPage key="catalog" />}
                 />
                 <Route path="/eszkozok/:id" element={<EquipmentPage />} />
+                <Route
+                  path="/foglalasok"
+                  element={<ReservationsPage key="mine" />}
+                />
+                <Route path="/foglalasok/:id" element={<ReservationPage />} />
                 <Route element={<Protected roles={["MANAGER", "ADMIN"]} />}>
+                  <Route
+                    path="/elbiralas"
+                    element={<ReservationsPage key="review" management />}
+                  />
                   <Route
                     path="/kezeles"
                     element={<CatalogPage key="management" management />}

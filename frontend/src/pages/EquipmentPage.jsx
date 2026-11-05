@@ -5,6 +5,7 @@ import { useAuth } from "../auth/AuthContext";
 import { api } from "../api/client";
 import { EquipmentArt } from "../components/EquipmentArt";
 import { ErrorState, LoadingCards } from "../components/Feedback";
+import { ReservationForm } from "../reservations/ReservationForm";
 
 export function EquipmentPage() {
   const { id } = useParams();
@@ -70,6 +71,7 @@ export function EquipmentPage() {
               Az eszköz leltári állapota és az adott időszakra vonatkozó
               foglalhatósága eltérhet.
             </div>
+            <ReservationForm equipmentId={result.data.id} />
           </section>
         </div>
       )}
