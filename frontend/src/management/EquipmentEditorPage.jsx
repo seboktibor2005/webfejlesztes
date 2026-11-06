@@ -18,6 +18,7 @@ const eventLabels = {
   RESERVATION_APPROVED: "Igény jóváhagyva",
   RESERVATION_REJECTED: "Igény elutasítva",
   RESERVATION_CANCELLED: "Igény visszavonva",
+  RESERVATION_EXPIRED: "Átvétel nélkül lejárt",
   LOAN_ISSUED: "Eszköz átadva",
   LOAN_RETURNED: "Eszköz visszavéve",
 };
@@ -289,6 +290,14 @@ function EquipmentForm({ item, categories, locations, reload }) {
                 required
               >
                 <option value="">Válassz kategóriát</option>
+                {item &&
+                  !categories.some(
+                    (category) => category.id === item.category.id,
+                  ) && (
+                    <option value={item.category.id}>
+                      {item.category.name} (archivált)
+                    </option>
+                  )}
                 {categories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
@@ -305,6 +314,14 @@ function EquipmentForm({ item, categories, locations, reload }) {
                 required
               >
                 <option value="">Válassz tárolási helyet</option>
+                {item &&
+                  !locations.some(
+                    (location) => location.id === item.location.id,
+                  ) && (
+                    <option value={item.location.id}>
+                      {item.location.name} (archivált)
+                    </option>
+                  )}
                 {locations.map((location) => (
                   <option key={location.id} value={location.id}>
                     {location.name}
@@ -313,6 +330,17 @@ function EquipmentForm({ item, categories, locations, reload }) {
               </select>
             </label>
           </div>
+          {item &&
+            (!categories.some((category) => category.id === item.category.id) ||
+              !locations.some(
+                (location) => location.id === item.location.id,
+              )) && (
+              <p className="input-help">
+                Az eszköz jelenlegi kategóriája vagy tárolási helye archivált. A
+                mentéshez válassz aktív törzsadatokat, vagy adminisztrátorként
+                aktiváld újra a meglévőket.
+              </p>
+            )}
           <button className="button primary" type="submit">
             <Save size={17} />
             {mutation.isPending ? "Mentés…" : "Eszköz mentése"}

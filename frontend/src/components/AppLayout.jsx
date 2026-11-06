@@ -12,6 +12,7 @@ import {
   ListChecks,
   PackageCheck,
   Wrench,
+  Tags,
 } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { Brand } from "./Brand";
@@ -110,6 +111,12 @@ export function AppLayout() {
             <NavLink to="/felhasznalok" onClick={() => setOpen(false)}>
               <Users size={20} />
               Felhasználók
+            </NavLink>
+          )}
+          {user.role === "ADMIN" && (
+            <NavLink to="/torzsadatok" onClick={() => setOpen(false)}>
+              <Tags size={20} />
+              Törzsadatok
             </NavLink>
           )}
         </nav>

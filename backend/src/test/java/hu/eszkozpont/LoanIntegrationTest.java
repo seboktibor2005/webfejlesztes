@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 // Az üzleti órát órákkal előreléptetjük; kizárólag ebben a tesztben hosszabb a token élettartama.
-@SpringBootTest(properties = {"JWT_SECRET=loan-tests-only-secret-at-least-32-bytes", "app.demo-data=false", "app.jwt.ttl=PT24H"})
+@SpringBootTest(properties = {"JWT_SECRET=loan-tests-only-secret-at-least-32-bytes", "app.demo-data=false", "app.jwt.ttl=PT24H", "app.reservations.expiry-enabled=false"})
 @AutoConfigureMockMvc
 @Import(LoanIntegrationTest.TimeConfiguration.class)
 class LoanIntegrationTest {

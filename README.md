@@ -2,7 +2,7 @@
 
 Magyar nyelvű egyetemi eszközkatalógus, foglalás- és kölcsönzéskezelő. Spring Boot + Java backend, React + JavaScript frontend, PostgreSQL adatbázis.
 
-## Jelenlegi állapot: kölcsönzés és kezelési funkciók
+## Jelenlegi állapot: törzsadatkezelés és automatikus lejárat
 
 **Elkészült:** regisztráció, JWT-belépés, valódi kijelentkezés/tokenvisszavonás, három szerepkör, eszközkatalógus, adatlap, keresés, kategória/helyszín szűrés, rendezés, lapozás, kezelői teljes leltárlista és admin felhasználólista. Magyar, reszponzív felület. Nyolctáblás Flyway-séma. PostgreSQL-alapú integrációs tesztek és frontendtesztek.
 
@@ -10,9 +10,13 @@ Magyar nyelvű egyetemi eszközkatalógus, foglalás- és kölcsönzéskezelő. 
 
 **Kölcsönzés:** időablakhoz kötött átadás, jó/használt/sérült állapotú visszavétel, késés és késve visszahozott állapot, kezelői munkalista. Sérüléskor automatikus karbantartási zárolás, kezelői lezárással. A veszélyeztetett későbbi jóváhagyások figyelmeztetést kapnak. Átadás/visszavétel és naplózás közös tranzakcióban, párhuzamos műveletekre is tesztelve.
 
-**Kezelés:** kereshető eszközválasztással kézi karbantartási felvitel, lista/adatlap, lemondás/lezárás és ütközésvédelem. Eszközfelvitel, verziózott szerkesztés, indokolt kivonás és eszköztörténet. Adminisztrátori név/szerep/tiltás módosítás, tokenvisszavonás, párhuzamos kérések mellett is védett utolsó aktív admin.79 backend- és29 frontendteszt.
+**Kezelés:** kereshető eszközválasztással kézi karbantartási felvitel, lista/adatlap, lemondás/lezárás és ütközésvédelem. Eszközfelvitel, verziózott szerkesztés, indokolt kivonás és eszköztörténet. Adminisztrátori név/szerep/tiltás módosítás, tokenvisszavonás, párhuzamos kérések mellett is védett utolsó aktív admin.
 
-**Következik:** kategória/helyszín törzsadatkezelés, naptár, dashboard és az átvétel nélkül lejárt igények automatikus lezárása. Ezek még nem működő API-funkciók.
+**Törzsadatok:** adminisztrátori kategória- és tárolásihely-kezelés, keresés, állapotszűrés, lapozás, verziózott szerkesztés, archiválás/visszaaktiválás. Csak eszközhivatkozás nélküli rekord törölhető. Élő igény vagy nyitott kölcsönzés mellett az archiválás is tiltott; a párhuzamos eszközfelvitel és foglalás sem kerülheti meg ezt.
+
+**Automatikus lejárat:** a háttérfolyamat az időszak végén EXPIRED állapotba teszi az át nem vett REQUESTED/APPROVED igényeket, rendszerszintű eseménnyel. Kölcsönzést nem vesz vissza automatikusan. Összesen **104 backendteszt és 39 frontendteszt**.
+
+**Következik:** naptár, időszakra szűrt katalógus és valódi adatokból épülő dashboard. Ezek még tervezett funkciók.
 
 ## Tervezési dokumentumok
 
@@ -24,6 +28,8 @@ Magyar nyelvű egyetemi eszközkatalógus, foglalás- és kölcsönzéskezelő. 
 - [Foglalás és elbírálás – működés és ellenőrzés](docs/masodik-fejlesztesi-egyseg.md)
 - [Átadás, visszavétel és késések – működés és ellenőrzés](docs/harmadik-fejlesztesi-egyseg.md)
 - [Karbantartás, eszköz- és felhasználószerkesztés](docs/kezelesi-fejlesztesi-egyseg.md)
+- [Törzsadatok és automatikus foglaláslejárat](docs/torzsadatok-es-lejarat.md)
+- [Ellenőrzési jegyzőkönyv](docs/ellenorzes.md)
 
 ## Helyi indítás Windows alatt, Docker nélkül
 
@@ -49,6 +55,8 @@ A folyamatok Ctrl+C-vel állíthatók le a saját termináljukban. A frontend a 
 A helyi indító **valódi PostgreSQL 18.3-at** futtat 127.0.0.1:55432 címen. Adatok: `.local/postgres`; véletlen JWT-kulcs: `.local/jwt-secret`. Ezek figyelmen kívül hagyott helyi fájlok. Újraindításkor megmaradnak. A local adatbázis fejlesztői, loopbackre kötött, trust-hitelesítésű adatbázis; nem éles üzemre való. Ne adj neki hálózati hozzáférést. A natív PostgreSQL-futtatókönyvtár csak tesztfüggőség, a kiadott alkalmazásba nem kerül bele.
 
 A demófeltöltés kizárólag local profilban, teljesen üres adatbázisnál fut. Meglévő adatokat nem ír felül.
+
+A lejárati háttérfolyamat alapból engedélyezett. Indulás után egy perccel fut először, majd az előző futás befejezése után egy percet vár. Futásonként legfeljebb 100 igényt dolgoz fel. Opcionális környezeti változók: `RESERVATION_EXPIRY_ENABLED=false` kikapcsolja; `RESERVATION_EXPIRY_DELAY=PT1M` az ISO-8601 időközt adja meg. A régebbi, át nem vett demóigények újraindítás után is lejárnak; a történetük megmarad.
 
 | Szerep           | E-mail                 | Helyi demójelszó |
 | ---------------- | ---------------------- | ---------------- |

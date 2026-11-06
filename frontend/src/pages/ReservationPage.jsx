@@ -13,6 +13,7 @@ const eventLabels = {
   RESERVATION_APPROVED: "Igény jóváhagyva",
   RESERVATION_REJECTED: "Igény elutasítva",
   RESERVATION_CANCELLED: "Foglalás visszavonva",
+  RESERVATION_EXPIRED: "Átvétel nélkül lejárt",
   LOAN_ISSUED: "Eszköz átadva",
   LOAN_RETURNED: "Eszköz visszavéve",
   MAINTENANCE_OPENED: "Karbantartási zárolás létrehozva",

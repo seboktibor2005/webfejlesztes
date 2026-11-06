@@ -26,7 +26,7 @@ import static org.awaitility.Awaitility.await;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(properties = {"JWT_SECRET=reservation-tests-only-secret-at-least-32-bytes", "app.demo-data=false"})
+@SpringBootTest(properties = {"JWT_SECRET=reservation-tests-only-secret-at-least-32-bytes", "app.demo-data=false", "app.reservations.expiry-enabled=false"})
 @AutoConfigureMockMvc
 @Import(ReservationIntegrationTest.TimeConfiguration.class)
 class ReservationIntegrationTest {

@@ -1,0 +1,100 @@
+.reference-tabs {
+  display: flex;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 14px;
+  margin-bottom: 25px;
+}
+.reference-tabs a {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: #6d7c64;
+}
+.reference-tabs a[aria-current="page"] {
+  background: #e6efdf;
+  color: #356239;
+}
+.reference-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(280px, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.reference-list {
+  min-width: 0;
+}
+.reference-filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+.reference-filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  flex: 1;
+  min-width: 140px;
+}
+.reference-filters input,
+.reference-filters select {
+  padding: 11px;
+  min-width: 0;
+  border: 1px solid #d6dfcf;
+  border-radius: 8px;
+  background: #fff;
+  color: #35462e;
+  font: inherit;
+  font-size: 12px;
+}
+.reference-table {
+  min-width: 490px;
+}
+.reference-table td {
+  white-space: normal;
+}
+.reference-table td:first-child {
+  overflow-wrap: anywhere;
+}
+.reference-table th,
+.reference-table td {
+  padding: 16px 14px;
+}
+.reference-equipment-link {
+  display: block;
+  font-size: 10px;
+  color: #4e7851;
+  margin-top: 8px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.reference-row-actions {
+  display: flex;
+  gap: 3px;
+}
+.reference-review {
+  margin-top: 22px;
+}
+.reference-review p {
+  font-size: 12px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 1150px) {
+  .reference-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .reference-tabs {
+    gap: 6px;
+  }
+  .reference-tabs a {
+    padding: 9px 10px;
+    font-size: 12px;
+  }
+}

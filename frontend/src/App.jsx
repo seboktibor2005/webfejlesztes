@@ -19,6 +19,7 @@ import { ReservationPage } from "./pages/ReservationPage";
 import { LoansPage } from "./pages/LoansPage";
 import { EquipmentEditorPage } from "./management/EquipmentEditorPage";
 import { UserEditorPage } from "./management/UserEditorPage";
+import { ReferenceDataPage } from "./management/ReferenceDataPage";
 import {
   MaintenancePage,
   MaintenanceCreatePage,
@@ -100,6 +101,22 @@ export default function App() {
                   />
                 </Route>
                 <Route element={<Protected roles={["ADMIN"]} />}>
+                  <Route
+                    path="/torzsadatok"
+                    element={<Navigate to="/torzsadatok/kategoriak" replace />}
+                  />
+                  <Route
+                    path="/torzsadatok/kategoriak"
+                    element={
+                      <ReferenceDataPage key="categories" kind="categories" />
+                    }
+                  />
+                  <Route
+                    path="/torzsadatok/helyszinek"
+                    element={
+                      <ReferenceDataPage key="locations" kind="locations" />
+                    }
+                  />
                   <Route path="/felhasznalok" element={<UsersPage />} />
                   <Route
                     path="/felhasznalok/:id"

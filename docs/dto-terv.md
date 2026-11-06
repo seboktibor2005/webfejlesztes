@@ -58,15 +58,28 @@ A LoanMapper a tényleges átadót/visszavevőt, igénylőt, eszközt és karban
 
 Az AdminUserResponse version:long mezővel bővült. A technikai tokenVersion továbbra sem kerül ki. Az eszköz requestből a MapStruct csak a megengedett skalármezőket írja; a kapcsolatok, állapotok és jogosultságok a service felelőssége. A felhasználó-módosítás nem általános entitásfrissítés, hanem kifejezetten ellenőrzött adminparancs.
 
+### Törzsadatkezelési DTO-k – elkészültek
+
+| DTO                   | Mezők                                                        | Validáció / jelentés                                                                                |
+| --------------------- | ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| CategoryCreateRequest | name:string, description?:string                             | Trimelt név, nem üres, max80; opcionális leírás max500. A név kisbetűfüggetlenül egyedi.            |
+| CategoryUpdateRequest | name, description?, version:Long                             | Ugyanezek a korlátok, kötelező nem negatív verzió.                                                  |
+| CategoryAdminResponse | id, name, description?, active:boolean, version:long         | Csak adminolvasásban; a CategoryResponse változatlan.                                               |
+| LocationCreateRequest | code:string, name:string, building:string, room:string       | Mind trimelt és nem üres; max30/100/100/30. A kód nagybetűs, egyedi, mintája `[A-Z0-9][A-Z0-9_-]*`. |
+| LocationUpdateRequest | code, name, building, room, version:Long                     | Ugyanezek a korlátok, kötelező nem negatív verzió.                                                  |
+| LocationAdminResponse | id, code, name, building, room, active:boolean, version:long | Csak adminolvasásban; a LocationResponse változatlan.                                               |
+| ActiveRequest         | active:Boolean, version:Long                                 | Mind kötelező; verzió nem negatív. Az állapot külön PATCH-parancs, PUT-ban tiltott.                 |
+
+Az új rekord aktív. A ReferenceDataMapper külön létrehozási és módosítási whitelistet használ: id/active/version nem másolható a bemenetből az entitásba. A verziót a service összehasonlítja, Hibernate kezeli a növelését. A törléshez nincs request DTO: kötelező `version` query paramétert vár.
+
+A RESERVATION_EXPIRED esemény a meglévő AuditEventResponse szerződését használja: actor=null („Rendszer”), fromState=REQUESTED/APPROVED, toState=EXPIRED. A lejárati feldolgozó nem bővíti az API-t új parancs DTO-val.
+
 ## Következő egységek DTO-terve – még nincs implementálva
 
 | DTO                         | Mezők                                                                                                                                   | Kötelező szabályok                                                                           |
 | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | ProfileUpdateRequest        | displayName                                                                                                                             | Nem üres, max100; e-mail és szerep külön folyamat, itt nem változik.                         |
 | PasswordChangeRequest       | currentPassword, newPassword                                                                                                            | Jelenlegi jelszó ellenőrzése; újra regisztrációs korlátok; tokenek visszavonása.             |
-| CategorySaveRequest         | name, description?                                                                                                                      | Nem üres, max80/500; normalizált név egyedi.                                                 |
-| LocationSaveRequest         | code, name, building, room                                                                                                              | Max30/100/100/30; nem üres; kód egyedi.                                                      |
-| ActiveRequest               | active: boolean                                                                                                                         | JSON boolean kötelező, nem primitív default.                                                 |
 | AvailabilityResponse        | equipmentId, from, to, blockingIntervals: {startsAt,endsAt,kind}[], overdueLoan:boolean, overdueMaintenance:boolean                     | Kind: RESERVATION/MAINTENANCE; nincs foglalóazonosító, cél vagy foglalásazonosító. max90nap. |
 | UserDashboardResponse       | pendingCount, activeLoanCount, nextPickup?:ReservationSummaryResponse, nextReturn?:LoanResponse                                         | Csak saját adatok.                                                                           |
 | ManagementDashboardResponse | pendingCount, todayPickupCount, todayReturnCount, overdueLoanCount, maintenanceCount, loansByCategory:{categoryId,categoryName,count}[] | Utolsó30nap kategóriaösszesítés; adatbázisoldali számítás.                                   |
@@ -75,4 +88,4 @@ Az AdminUserResponse version:long mezővel bővült. A technikai tokenVersion to
 
 Content-Type: application/problem+json. Mezők: type (urn:eszkozpont:problem:KOD), title (magyar), status (HTTP), detail (magyar), instance? (kérésútvonal), code (stabil angol kód), errors:[{field,message}]. A rejectedValue, stack trace, SQL és jelszó nem része a válasznak. Security-szűrő hibája is ezt a formát használja.
 
-400: VALIDATION_ERROR, INVALID_REQUEST, INVALID_FILTER, INVALID_SORT, INVALID_PAGE, INVALID_PERIOD, REASON_REQUIRED, DAMAGE_DETAILS_REQUIRED, INVALID_CATEGORY, INVALID_LOCATION. 401: INVALID_CREDENTIALS, UNAUTHORIZED, INVALID_TOKEN. 403: ACCESS_DENIED, SELF_APPROVAL. 404: EQUIPMENT_NOT_FOUND, RESERVATION_NOT_FOUND, LOAN_NOT_FOUND, MAINTENANCE_NOT_FOUND, USER_NOT_FOUND. 409: EMAIL_TAKEN, DATA_CONFLICT, RESERVATION_CONFLICT, INVALID_TRANSITION, STALE_VERSION, EQUIPMENT_UNAVAILABLE, REQUESTER_DISABLED, CONCURRENT_CHANGE, OUTSIDE_PICKUP_WINDOW, LAST_ADMIN, INVENTORY_CODE_TAKEN, LOCATION_LOCKED, EQUIPMENT_IN_USE, MAINTENANCE_CONFLICT.
+400: VALIDATION_ERROR, INVALID_REQUEST, INVALID_FILTER, INVALID_SORT, INVALID_PAGE, INVALID_PERIOD, REASON_REQUIRED, DAMAGE_DETAILS_REQUIRED, INVALID_CATEGORY, INVALID_LOCATION. 401: INVALID_CREDENTIALS, UNAUTHORIZED, INVALID_TOKEN. 403: ACCESS_DENIED, SELF_APPROVAL. 404: EQUIPMENT_NOT_FOUND, RESERVATION_NOT_FOUND, LOAN_NOT_FOUND, MAINTENANCE_NOT_FOUND, USER_NOT_FOUND, CATEGORY_NOT_FOUND, LOCATION_NOT_FOUND. 409: EMAIL_TAKEN, DATA_CONFLICT, RESERVATION_CONFLICT, INVALID_TRANSITION, STALE_VERSION, EQUIPMENT_UNAVAILABLE, REQUESTER_DISABLED, CONCURRENT_CHANGE, OUTSIDE_PICKUP_WINDOW, LAST_ADMIN, INVENTORY_CODE_TAKEN, LOCATION_LOCKED, EQUIPMENT_IN_USE, MAINTENANCE_CONFLICT, CATEGORY_NAME_TAKEN, LOCATION_CODE_TAKEN, REFERENCE_IN_USE, REFERENCE_BUSY.

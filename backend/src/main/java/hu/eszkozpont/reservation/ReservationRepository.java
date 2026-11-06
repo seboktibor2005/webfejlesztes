@@ -55,4 +55,12 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long>,
 
     @Query(value = "select exists(select 1 from reservation where equipment_id = :equipmentId and status = 'APPROVED' and starts_at < :endsAt and ends_at > :startsAt and ends_at > :now)", nativeQuery = true)
     boolean hasApprovedMaintenanceConflict(Long equipmentId, Instant startsAt, Instant endsAt, Instant now);
+
+    @Query(value = """
+            select r.id from reservation r
+            where r.status in ('REQUESTED','APPROVED') and r.ends_at <= :now
+              and not exists(select 1 from loan l where l.reservation_id = r.id)
+            order by r.ends_at, r.id
+            """, nativeQuery = true)
+    List<Long> findExpiryCandidates(Instant now, Pageable pageable);
 }

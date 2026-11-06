@@ -29,13 +29,15 @@ public class EquipmentManagementService {
     private final AuditEventRepository events;
     private final AuditEventMapper eventMapper;
     private final Clock clock;
+    private final ReferenceDataLock referenceLock;
 
     public EquipmentManagementService(EquipmentRepository equipment, CategoryRepository categories, LocationRepository locations,
             EquipmentMapper mapper, UserRepository users, LoanRepository loans, ReservationRepository reservations,
-            AuditEventRepository events, AuditEventMapper eventMapper, Clock clock) {
+            AuditEventRepository events, AuditEventMapper eventMapper, Clock clock, ReferenceDataLock referenceLock) {
         this.equipment = equipment; this.categories = categories; this.locations = locations; this.mapper = mapper;
         this.users = users; this.loans = loans; this.reservations = reservations; this.events = events;
         this.eventMapper = eventMapper; this.clock = clock;
+        this.referenceLock = referenceLock;
     }
 
     public EquipmentResponse get(long actorId, long id) {
@@ -51,6 +53,7 @@ public class EquipmentManagementService {
 
     @Transactional
     public EquipmentResponse create(long actorId, @NotNull @Valid EquipmentCreateRequest request) {
+        referenceLock.shared();
         var actor = manager(actorId);
         if (equipment.existsByInventoryCode(request.inventoryCode())) throw error(HttpStatus.CONFLICT, "INVENTORY_CODE_TAKEN", "Ez a leltári szám már használatban van.");
         var item = mapper.fromCreate(request);
@@ -63,6 +66,7 @@ public class EquipmentManagementService {
 
     @Transactional
     public EquipmentResponse update(long actorId, long id, @NotNull @Valid EquipmentUpdateRequest request) {
+        referenceLock.shared();
         var item = equipment.lockById(id).orElseThrow(this::notFound);
         var actor = manager(actorId);
         version(item, request.version());
@@ -79,6 +83,7 @@ public class EquipmentManagementService {
 
     @Transactional
     public EquipmentResponse retire(long actorId, long id, @NotNull @Valid EquipmentRetireRequest request) {
+        referenceLock.shared();
         var item = equipment.lockById(id).orElseThrow(this::notFound);
         var actor = manager(actorId);
         version(item, request.version());

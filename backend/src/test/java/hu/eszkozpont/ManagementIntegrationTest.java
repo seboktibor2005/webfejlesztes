@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 // Az üzleti óra léptetéséhez csak a teszt tokenje él tovább; a termék beállítása változatlan.
-@SpringBootTest(properties = {"JWT_SECRET=management-tests-only-secret-at-least-32-bytes", "app.demo-data=false", "app.jwt.ttl=PT24H"})
+@SpringBootTest(properties = {"JWT_SECRET=management-tests-only-secret-at-least-32-bytes", "app.demo-data=false", "app.jwt.ttl=PT24H", "app.reservations.expiry-enabled=false"})
 @AutoConfigureMockMvc
 @Import(ManagementIntegrationTest.TimeConfiguration.class)
 class ManagementIntegrationTest {

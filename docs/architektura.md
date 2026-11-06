@@ -21,11 +21,11 @@ erDiagram
   RESERVATION o|--o{ AUDIT_EVENT : foglalasi_elozmeny
 ```
 
-A részletes mezőlista és adatbáziskorlátok forrása: backend/src/main/resources/db/migration/V1\_\_initial_schema.sql, illetve a V2\_\_loan_safety_maintenance.sql bővítés. Mind a nyolc üzleti táblához van JPA-entitás. A V2 opcionális, egyedi loan_id kapcsolatot ad a karbantartáshoz: egy sérült visszavétel egy biztonsági zárat hoz létre. A Flyway saját schema history táblája technikai metaadat, nem kilencedik üzleti entitás.
+A részletes mezőlista és adatbáziskorlátok forrása a backend/src/main/resources/db/migration könyvtár V1–V4 migrációja. Mind a nyolc üzleti táblához van JPA-entitás. A V2 opcionális, egyedi loan_id kapcsolatot ad a karbantartáshoz: egy sérült visszavétel egy biztonsági zárat hoz létre. A V3 a felhasználó, a V4 a kategória és helyszín verzióját, valamint normalizált egyedi indexeiket vezeti be. A Flyway saját schema history táblája technikai metaadat, nem kilencedik üzleti entitás.
 
 ## ADR-001: PostgreSQL és migráció
 
-Az adatok nem veszhetnek el újraindításkor. A Flyway hozza létre a sémát; Hibernate ddl-auto=validate, OSIV=false. Már alkalmazott migrációt nem írunk át: a későbbi módosítás új V2/V3 fájl. Az SQL CHECK-korlátok nem helyettesítik a service réteg üzleti ellenőrzéseit.
+Az adatok nem veszhetnek el újraindításkor. A Flyway hozza létre a sémát; Hibernate ddl-auto=validate, OSIV=false. Már alkalmazott migrációt nem írunk át: minden későbbi módosítás új, növekvő verziójú fájl. Az SQL CHECK-korlátok nem helyettesítik a service réteg üzleti ellenőrzéseit.
 
 ## ADR-002: Egyszerű moduláris monolit
 
@@ -73,6 +73,24 @@ A V3 a felhasználóhoz @Version oszlopot ad. Adminmódosítás és kijelentkez�
 
 A kliens szerkesztés közben megőrzi a kezdeti verziót. Konfliktusnál a piszkozat megmarad; friss adatok betöltése explicit űrlap-visszaállítás. Saját felhasználó-módosítás után a kliens munkamenetét és query cache-ét is töröljük. A felhasználócélt kezelő általános auditbővítés külön feladat lenne; jelenleg az audit eszköz/foglalás alapú.
 
+## ADR-011: Törzsadatok és stabil eszközkapcsolatok
+
+A kategória/helyszín adminisztráció önálló equipment/reference alcsomag; a meglévő, aktív választékot adó API változatlan. Külön adminválasz tartalmaz active/version mezőt. A MapStruct a létrehozás és módosítás megengedett mezőit képezi, nem általánosan írja felül az entitást. A V4 @Version oszlopot ad mindkét törzsadathoz, és egyedi funkcionális indexet a lower(btrim(name)), illetve upper(btrim(code)) értékre. Meglévő migrációt nem változtatunk.
+
+A törzsadatírások a 173528/2 kulcsú kizáró pg_advisory_xact_lock zárat kérik, még a rekord beolvasása előtt. Az eszközfelvitel, -szerkesztés és -kivonás ugyanezen kulcs megosztott pg_advisory_xact_lock_shared zárát kéri, még az eszközsorzár előtt. Egymás mellett több eszköz módosulhat; a ritkább adminművelet idejére a kapcsolatok stabilak. Ez megakadályozza például, hogy archiválás ellenőrzése közben új eszköz kapcsolódjon a kategóriához.
+
+Archiváláskor az összes kapcsolt eszközsort növekvő id szerint zároljuk, majd frissen ellenőrizzük a nyitott kölcsönzéseket és a még élő REQUESTED/APPROVED igényeket. A foglalás/átadás ugyanazt az eszközsort zárolja; így új foglalás sem csúszhat az ellenőrzés és archiválás közé. Az egységes zársorrend elkerüli a fordított advisory/eszköz zárkérést. A globális törzsadatzár a féléves projekt méreténél egyszerűbb és könnyebben bizonyítható, mint a változó FK-khoz tartozó többszintű egyedi zárak. A felhasználókezelés 173528/1 zára ettől független.
+
+Törlés csak minden eszközhivatkozás nélkül engedett, az archivált/kivont eszközök is számítanak. Archiválásnál a történeti kapcsolatok megmaradnak. A frontend az inaktív kapcsolt értéket is megmutatja az eszközszerkesztőben, és aktív választást vagy admin-visszaaktiválást kér. A jelenlegi audit eszköz/foglalás alapú, a törzsadatmódosításhoz nem állítunk általános auditnaplót.
+
+## ADR-012: Ütemezett, újrapróbálható lejáratkezelés
+
+Spring @Scheduled futtatja az egyszerű ReservationExpiryJob feladatot; nincs szükség külső sorra vagy Quartzra. A kapcsoló és ISO-8601 időköz környezeti változóból felülírható. Alapérték: engedélyezett, PT1M kezdeti és futások közötti késleltetés. A jelöltolvasás skalár azonosítókat kér, legfeljebb 100-at, endsAt/id sorrendben. Nagyobb hátralék több futásban fogy el.
+
+Minden jelölt feldolgozása külön, proxyn keresztül hívott @Transactional service-parancs. Előbb skalár eszközazonosító, majd eszközsorzár, utána foglalás és aktuális Clock. Csak REQUESTED/APPROVED, endsAt <= most, semmilyen Loan kapcsolat nélkül válthat EXPIRED-re. Az állapot és a null actorú RESERVATION_EXPIRED esemény közös tranzakció; audithibánál mindkettő visszagördül. Nincs nyilvános lejárati HTTP-végpont és nincs automatikus visszavétel.
+
+Dupla ütemezőfutás vagy több alkalmazáspéldány esetén a zár utáni ellenőrzés megakadályozza a dupla eseményt. Egy rekord hibáját a job naplózza, a többi jelöltet folytatja; a következő futás újra próbálhatja. A szabálytesztekben kikapcsoljuk a jobot és injektált órával léptetünk. Külön integrációs teszt tényleges ütemezővel, saját adatbázisban, rövid tesztidőközzel bizonyítja a bekötést és a rendszeresemény API-olvasását.
+
 ## Források
 
 - https://docs.spring.io/spring-security/reference/servlet/oauth2/resource-server/jwt.html
@@ -84,3 +102,5 @@ A kliens szerkesztés közben megőrzi a kezdeti verziót. Konfliktusnál a pisz
 - https://www.postgresql.org/docs/current/transaction-iso.html
 - https://www.postgresql.org/docs/current/indexes-partial.html
 - https://www.postgresql.org/docs/current/functions-admin.html#FUNCTIONS-ADVISORY-LOCKS
+- https://docs.spring.io/spring-framework/reference/integration/scheduling.html
+- https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/scheduling/annotation/Scheduled.html

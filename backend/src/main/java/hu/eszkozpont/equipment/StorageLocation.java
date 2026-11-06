@@ -12,4 +12,5 @@ public class StorageLocation {
     @Column(nullable = false, length = 100) private String building;
     @Column(nullable = false, length = 30) private String room;
     @Column(nullable = false) private boolean active = true;
+    @Version private long version;
 }

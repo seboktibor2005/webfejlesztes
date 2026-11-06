@@ -24,7 +24,7 @@ import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(properties = {"JWT_SECRET=test-only-jwt-secret-at-least-32-bytes-long", "app.demo-data=false"})
+@SpringBootTest(properties = {"JWT_SECRET=test-only-jwt-secret-at-least-32-bytes-long", "app.demo-data=false", "app.reservations.expiry-enabled=false"})
 @AutoConfigureMockMvc
 class FoundationIntegrationTest {
     private static final EmbeddedPostgres POSTGRES;

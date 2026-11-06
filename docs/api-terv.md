@@ -68,24 +68,47 @@ A kézi karbantartás jövőbeli végű, egész perces időszakot vár; már elk
 
 A felhasználó módosítása displayName/role/enabled/version mezőket kér. Minden tényleges változás visszavonja az érintett korábbi tokenjeit; változatlan mentés nem. Az utolsó aktív admin letiltása/lefokozása409 LAST_ADMIN. A jogosultságot a közös tranzakciós adminzár megszerzése után is ellenőrizzük. Saját módosítás után új belépés szükséges. E-mail/jelszó nem módosítható ezen az útvonalon.
 
+## Törzsadatkezelés – elkészült
+
+Minden alábbi útvonal kizárólag ADMIN számára érhető el. A service a módosítások közös zárának megszerzése után az aktív adminjogot is ellenőrzi. A hitelesített, aktív választékot adó `GET /categories` és `GET /locations` szerződése változatlan; az adminválasz külön `active` és `version` mezőt tartalmaz.
+
+| Metódus és út                       | Kérés / paraméterek              | Siker                                                    |
+| ----------------------------------- | -------------------------------- | -------------------------------------------------------- |
+| GET /admin/categories               | q?,active?,page=0,size=20        | PageResponse<CategoryAdminResponse>                      |
+| GET /admin/categories/{id}          | –                                | CategoryAdminResponse                                    |
+| POST /admin/categories              | CategoryCreateRequest            | 201 CategoryAdminResponse; Location az új adminadatlapra |
+| PUT /admin/categories/{id}          | CategoryUpdateRequest            | CategoryAdminResponse                                    |
+| PATCH /admin/categories/{id}/active | ActiveRequest                    | 204                                                      |
+| DELETE /admin/categories/{id}       | Kötelező version query paraméter | 204                                                      |
+| GET /admin/locations                | q?,active?,page=0,size=20        | PageResponse<LocationAdminResponse>                      |
+| GET /admin/locations/{id}           | –                                | LocationAdminResponse                                    |
+| POST /admin/locations               | LocationCreateRequest            | 201 LocationAdminResponse; Location az új adminadatlapra |
+| PUT /admin/locations/{id}           | LocationUpdateRequest            | LocationAdminResponse                                    |
+| PATCH /admin/locations/{id}/active  | ActiveRequest                    | 204                                                      |
+| DELETE /admin/locations/{id}        | Kötelező version query paraméter | 204                                                      |
+
+A keresés kisbetűfüggetlen: kategóriánál név, tárolási helynél név/kód. A `%`, `_` és `\` literális karakter. A keresés maximum 120 karakter, az oldal nulla alapú, a méret 1–100. Az `active` elhagyva minden állapotot, true/false csak az adott állapotot adja. Rendezés kategóriánál name/id, helynél code/id; szabad sort paraméter nincs.
+
+Új rekord aktív és verziója 0. PUT csak a módosítható mezőket és a kötelező verziót fogadja. PATCH például `{"active":false,"version":0}`; törlés például `DELETE /api/admin/categories/7?version=0`. A 204 válasz után a friss verzió az adminolvasásból kérhető le. Változatlan mentés/aktiválás nem növel verziót; elavult kérés ekkor is 409 STALE_VERSION.
+
+Kategórianév és helyszínkód normalizált egyedisége adatbázisindexszel is védett: 409 CATEGORY_NAME_TAKEN / LOCATION_CODE_TAKEN. Bármilyen kapcsolt eszköz, a kivont is, megakadályozza a törlést: 409 REFERENCE_IN_USE. Archiváláskor az összes kapcsolt eszköz élő REQUESTED/APPROVED igényét (endsAt > most) és nyitott kölcsönzését vizsgáljuk; bármelyik 409 REFERENCE_BUSY. Archivált törzsadat eszközei a hallgatói katalógusból eltűnnek, kezelői listából megmaradnak. Visszaaktiválás visszaállítja az egyébként aktív eszközök láthatóságát. Ismeretlen kategória/helyszín 404 CATEGORY_NOT_FOUND / LOCATION_NOT_FOUND.
+
+## Automatikus lejárat – elkészült, belső háttérfolyamat
+
+Ehhez nincs HTTP-parancs. Alapból engedélyezett, egyperces kezdeti várakozással és a futások befejezése között egyperces késleltetéssel. Egy futás legfeljebb 100, endsAt/id szerint rendezett jelöltet vesz át. Az egyes parancsok külön tranzakcióban, a közös eszközsorzár után újraellenőrzik: REQUESTED vagy APPROVED, endsAt <= most, semmilyen Loan nem tartozik hozzá. Ezután EXPIRED állapot és RESERVATION_EXPIRED esemény készül atomikusan. Az actor null, a felület „Rendszer” feliratot mutat. A már átadott eszköz késés marad, automatikus visszavétel nincs.
+
+Egy rekord hibája visszagörgeti saját változását és naplózódik; a többi jelölt feldolgozása folytatódik. Ismételt vagy párhuzamos feldolgozás nem dupláz eseményt. Környezeti beállítások: RESERVATION_EXPIRY_ENABLED, RESERVATION_EXPIRY_DELAY. A foglalási válasz és esemény API-formája változatlan; az EXPIRED állapot ténylegesen előállhat.
+
 ## Tervezett végpontok – még nem használhatók
 
-| Metódus és út                       | Kérés / paraméterek                      | Siker                           | Jogosultság                               |
-| ----------------------------------- | ---------------------------------------- | ------------------------------- | ----------------------------------------- |
-| PUT /me                             | ProfileUpdateRequest                     | UserResponse                    | Saját                                     |
-| POST /me/password                   | PasswordChangeRequest                    | 204                             | Saját, minden JWT visszavonva             |
-| GET /equipment/{id}/availability    | from,to; max90nap                        | AvailabilityResponse            | Belépett; anonimizált                     |
-| GET /equipment                      | startsAt?,endsAt? együtt; eredeti szűrők | PageResponse<EquipmentResponse> | Csak a kért időszakra foglalható eszközök |
-| POST /admin/categories              | CategorySaveRequest                      | 201 CategoryResponse            | ADMIN                                     |
-| PUT /admin/categories/{id}          | CategorySaveRequest                      | CategoryResponse                | ADMIN                                     |
-| DELETE /admin/categories/{id}       | –                                        | 204; hivatkozás esetén409       | ADMIN                                     |
-| PATCH /admin/categories/{id}/active | ActiveRequest                            | 204                             | ADMIN                                     |
-| POST /admin/locations               | LocationSaveRequest                      | 201 LocationResponse            | ADMIN                                     |
-| PUT /admin/locations/{id}           | LocationSaveRequest                      | LocationResponse                | ADMIN                                     |
-| DELETE /admin/locations/{id}        | –                                        | 204; hivatkozás esetén409       | ADMIN                                     |
-| PATCH /admin/locations/{id}/active  | ActiveRequest                            | 204                             | ADMIN                                     |
-| GET /dashboard/me                   | –                                        | UserDashboardResponse           | Saját                                     |
-| GET /management/dashboard           | –                                        | ManagementDashboardResponse     | MANAGER/ADMIN                             |
+| Metódus és út                    | Kérés / paraméterek                      | Siker                           | Jogosultság                               |
+| -------------------------------- | ---------------------------------------- | ------------------------------- | ----------------------------------------- |
+| PUT /me                          | ProfileUpdateRequest                     | UserResponse                    | Saját                                     |
+| POST /me/password                | PasswordChangeRequest                    | 204                             | Saját, minden JWT visszavonva             |
+| GET /equipment/{id}/availability | from,to; max90nap                        | AvailabilityResponse            | Belépett; anonimizált                     |
+| GET /equipment                   | startsAt?,endsAt? együtt; eredeti szűrők | PageResponse<EquipmentResponse> | Csak a kért időszakra foglalható eszközök |
+| GET /dashboard/me                | –                                        | UserDashboardResponse           | Saját                                     |
+| GET /management/dashboard        | –                                        | ManagementDashboardResponse     | MANAGER/ADMIN                             |
 
 Későbbi listák rendezése is explicit fehérlistás lesz. Státuszparancsok nem PATCH status-ként működnek. Az endpoint elérése nem helyettesíti a service-beli tulajdonos- és állapotellenőrzést. PUT teljes mezőkészletet vár a módosítható mezőkből; a szerverkezelt mezők tiltottak.
 
@@ -105,4 +128,4 @@ A REQUESTED igények átfedhetnek. APPROVED foglalással ütköző igény létre
 
 ## Ellenőrzés
 
-A backend integrációs tesztjei valódi POST loginból kapott JWT-t használnak; nem csupán mockolt szerepköröket. A79 tesztből25 az új kezelési műveleteket ellenőrzi. A párhuzamos kérések tényleges adatbázis-zárra várakozását is bizonyítjuk. Részletek: [foglalás](masodik-fejlesztesi-egyseg.md), [kölcsönzés](harmadik-fejlesztesi-egyseg.md), [kezelés](kezelesi-fejlesztesi-egyseg.md).
+A backend integrációs tesztjei valódi POST loginból kapott JWT-t használnak; nem csupán mockolt szerepköröket. A teljes backendcsomag 104 tesztje közül 25 a törzsadatkezelést, lejárati szabályokat és ütemezőt ellenőrzi. A párhuzamos kérések tényleges adatbázis-zárra várakozását is bizonyítjuk. Részletek: [foglalás](masodik-fejlesztesi-egyseg.md), [kölcsönzés](harmadik-fejlesztesi-egyseg.md), [kezelés](kezelesi-fejlesztesi-egyseg.md), [törzsadatok és lejárat](torzsadatok-es-lejarat.md).
