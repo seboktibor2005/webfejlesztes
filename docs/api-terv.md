@@ -28,7 +28,7 @@ Alapcím helyben: http://localhost:9090/api. Minden útvonal hitelesített, kiv�
 
 Méret:1–100. Negatív oldalszám, hibás FK-szűrő, túl hosszú keresés:400. Rendezési fehérlista:name,asc; name,desc; inventoryCode,asc. Név/leltári szám keresés kisbetűfüggetlen; % és \_ literálisként kezelt. Üres találat:200 üres contenttel. A lista másodlagos rendezése id. A szerver nem fogad el tetszőleges property pathot rendezésként.
 
-Az eszköz lifecycle állapota nem időszakos elérhetőség. A dátumszűrt katalógus és az elérhetőségi naptár későbbi egység. A foglalási parancsok már valódi ütközésvizsgálatot végeznek.
+Az eszköz lifecycle állapota nem időszakos elérhetőség. A katalógus időszakszűrése és a foglaltsági naptár elkészült; részleteik alább. Az igénylés, jóváhagyás és átadás továbbra is külön, sorzár utáni ellenőrzést végez.
 
 A foglalási listák támogatott rendezése: createdAt,desc; startsAt,asc; startsAt,desc, stabil másodlagos id-rendezéssel. Méret1–100, nulla alapú oldal. Az események időrendben, azonos időnél id szerint következnek. A kezelői lista ebben az egységben csak státuszszűrőt fogad; igénylő-, eszköz- és dátumszűrő még nincs. Idegen foglalás és annak eseményei USER számára404. Minden foglalási állapotváltó parancs az utolsó válaszból kapott versiont várja.
 
@@ -99,16 +99,29 @@ Ehhez nincs HTTP-parancs. Alapból engedélyezett, egyperces kezdeti várakozás
 
 Egy rekord hibája visszagörgeti saját változását és naplózódik; a többi jelölt feldolgozása folytatódik. Ismételt vagy párhuzamos feldolgozás nem dupláz eseményt. Környezeti beállítások: RESERVATION_EXPIRY_ENABLED, RESERVATION_EXPIRY_DELAY. A foglalási válasz és esemény API-formája változatlan; az EXPIRED állapot ténylegesen előállhat.
 
+## Foglaltság és időszakra szűrés – elkészült
+
+| Metódus és út                    | Paraméterek                                                                  | Válasz                          | Jogosultság                                         |
+| -------------------------------- | ---------------------------------------------------------------------------- | ------------------------------- | --------------------------------------------------- |
+| GET /equipment                   | startsAt?,endsAt? együtt; a korábbi keresés/szűrés/rendezés/lapozás megmarad | PageResponse<EquipmentResponse> | Bármely belépett szerepkör; aktív katalógus         |
+| GET /equipment/{id}/availability | Kötelező from,to; offsetes ISO-8601 időpontok; 0 < időtartam <= 90×24 óra    | AvailabilityResponse            | Bármely belépett szerepkör, azonos anonimizált adat |
+
+Az időszakszűrés az igényléssel közös ReservationPeriods szabályt használja: jövőbeli, egész perces kezdet legfeljebb 60 nappal előre, 1 óra–7×24 óra időtartam. Az egyik paraméter önmagában, hibás sorrend/hossz/pontosság 400 INVALID_PERIOD; nem értelmezhető dátum 400 INVALID_REQUEST. Dátumok nélkül a korábbi teljes aktív katalógus működik. A kezelői `/management/equipment` teljes leltárlista marad, nincs időszakszűrője.
+
+A választott időszakkal átfedő APPROVED foglalás vagy OPEN karbantartás kizárja az eszközt. Nyitott, dueAt < most kölcsönzés és OPEN, startsAt <= most, endsAt <= most karbantartás az összes későbbi időszakot blokkolja. REQUESTED/REJECTED/CANCELLED/EXPIRED/COMPLETED igény és lezárt/lemondott karbantartás nem blokkol. A [kezdés,vég) intervallum miatt a pontos csatlakozás megengedett. A szűrés NOT EXISTS részlekérdezésekkel az adatbázisban történik, a lapozás és találatszám előtt.
+
+A naptár múltbeli napokat is kérhet, például az aktuális hét elejét. A válasz az aktuálisan APPROVED foglalások és OPEN karbantartások metszetét adja a kért ablakkal, start/end/kind szerinti sorrendben. Nem történeti kölcsönzési napló. Az intervallum csak startsAt/endsAt/kind mezőt tartalmaz; sem foglalásazonosító, sem név, e-mail, cél vagy javítási indok nincs benne. Késésnél a két külön boolean akkor is igaz lehet, ha nincs a kért ablakkal átfedő intervallum. A checkedAt a befecskendezett óra szerinti ellenőrzési idő. Inaktív/kivont, archivált törzsadatú és nem létező eszközre minden szerepkör 404 EQUIPMENT_NOT_FOUND választ kap.
+
+Ezek olvasási műveletek, nem tartják fenn az eszközt. Közben jóváhagyott másik igény miatt a következő írás 409-cel visszatérhet; az írások meglévő eszközsorzára megmarad. Példa: `GET /api/equipment?startsAt=2026-11-12T08:00:00Z&endsAt=2026-11-12T11:00:00Z`. A tényleges próba idején jövőbeli dátumot válassz.
+
 ## Tervezett végpontok – még nem használhatók
 
-| Metódus és út                    | Kérés / paraméterek                      | Siker                           | Jogosultság                               |
-| -------------------------------- | ---------------------------------------- | ------------------------------- | ----------------------------------------- |
-| PUT /me                          | ProfileUpdateRequest                     | UserResponse                    | Saját                                     |
-| POST /me/password                | PasswordChangeRequest                    | 204                             | Saját, minden JWT visszavonva             |
-| GET /equipment/{id}/availability | from,to; max90nap                        | AvailabilityResponse            | Belépett; anonimizált                     |
-| GET /equipment                   | startsAt?,endsAt? együtt; eredeti szűrők | PageResponse<EquipmentResponse> | Csak a kért időszakra foglalható eszközök |
-| GET /dashboard/me                | –                                        | UserDashboardResponse           | Saját                                     |
-| GET /management/dashboard        | –                                        | ManagementDashboardResponse     | MANAGER/ADMIN                             |
+| Metódus és út             | Kérés / paraméterek   | Siker                       | Jogosultság                   |
+| ------------------------- | --------------------- | --------------------------- | ----------------------------- |
+| PUT /me                   | ProfileUpdateRequest  | UserResponse                | Saját                         |
+| POST /me/password         | PasswordChangeRequest | 204                         | Saját, minden JWT visszavonva |
+| GET /dashboard/me         | –                     | UserDashboardResponse       | Saját                         |
+| GET /management/dashboard | –                     | ManagementDashboardResponse | MANAGER/ADMIN                 |
 
 Későbbi listák rendezése is explicit fehérlistás lesz. Státuszparancsok nem PATCH status-ként működnek. Az endpoint elérése nem helyettesíti a service-beli tulajdonos- és állapotellenőrzést. PUT teljes mezőkészletet vár a módosítható mezőkből; a szerverkezelt mezők tiltottak.
 
@@ -128,4 +141,4 @@ A REQUESTED igények átfedhetnek. APPROVED foglalással ütköző igény létre
 
 ## Ellenőrzés
 
-A backend integrációs tesztjei valódi POST loginból kapott JWT-t használnak; nem csupán mockolt szerepköröket. A teljes backendcsomag 104 tesztje közül 25 a törzsadatkezelést, lejárati szabályokat és ütemezőt ellenőrzi. A párhuzamos kérések tényleges adatbázis-zárra várakozását is bizonyítjuk. Részletek: [foglalás](masodik-fejlesztesi-egyseg.md), [kölcsönzés](harmadik-fejlesztesi-egyseg.md), [kezelés](kezelesi-fejlesztesi-egyseg.md), [törzsadatok és lejárat](torzsadatok-es-lejarat.md).
+A backend integrációs tesztjei valódi POST loginból kapott JWT-t használnak; nem csupán mockolt szerepköröket. A teljes backendcsomag 122 tesztje közül 18 a foglaltságot és időszakszűrést ellenőrzi. A keresés után létrejött akadály miatti 409-et is bizonyítjuk; az olvasás nem helyettesíti az íráskori ellenőrzést. Részletek: [foglalás](masodik-fejlesztesi-egyseg.md), [kölcsönzés](harmadik-fejlesztesi-egyseg.md), [kezelés](kezelesi-fejlesztesi-egyseg.md), [törzsadatok és lejárat](torzsadatok-es-lejarat.md), [naptár és időszakszűrés](naptar-es-idoszakszures.md).

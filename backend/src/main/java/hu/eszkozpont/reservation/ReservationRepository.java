@@ -8,6 +8,9 @@ import java.util.Optional;
 import java.util.List;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Long>, JpaSpecificationExecutor<Reservation> {
+    @Query("select new hu.eszkozpont.equipment.availability.BlockingInterval(r.startsAt, r.endsAt, 'RESERVATION') from Reservation r where r.equipment.id = :equipmentId and r.status = hu.eszkozpont.reservation.ReservationStatus.APPROVED and r.startsAt < :to and r.endsAt > :from")
+    List<hu.eszkozpont.equipment.availability.BlockingInterval> findAvailabilityIntervals(Long equipmentId, Instant from, Instant to);
+
     @Override
     @EntityGraph(attributePaths = {"equipment", "requester", "decidedBy"})
     Optional<Reservation> findById(Long id);

@@ -72,7 +72,7 @@ A felületi tesztek a tényleges payloadot, visszajelzést, űrlapmegőrzést, k
 
 Az új oldalak a helyi valódi backenddel, mobilon és asztalon ellenőrizve. Kis képernyőmagasságnál az oldalsáv dekorációja elrejtőzik, a navigáció görgethető; a kijelentkezés elérhető marad. A kézi próbához készített demóeszköz kivonva, karbantartásai lezárva/lemondva maradnak. A demóadmin eredeti neve visszaállítva.
 
-Az itt ismertetett egység után a [kategória/helyszín kezelés és az automatikus EXPIRED feldolgozó](torzsadatok-es-lejarat.md) is elkészült. A naptár, időszakra szűrt katalógus és dashboard továbbra is tervezett. A fenti tesztszám az akkori egység állapotát rögzíti; az aktuális összesítés az ellenőrzési jegyzőkönyvben található. Docker/éles telepítés ebben a környezetben nem volt ellenőrizhető; a helyi PostgreSQL-es működést ellenőriztük.
+Az itt ismertetett egység után a [kategória/helyszín kezelés és az automatikus EXPIRED feldolgozó](torzsadatok-es-lejarat.md), majd a [naptár és az időszakra szűrt katalógus](naptar-es-idoszakszures.md) is elkészült. A dashboard továbbra is tervezett. A fenti tesztszám az akkori egység állapotát rögzíti; az aktuális összesítés az ellenőrzési jegyzőkönyvben található. Docker/éles telepítés ebben a környezetben nem volt ellenőrizhető; a helyi PostgreSQL-es működést ellenőriztük.
 
 ## Technikai források
 

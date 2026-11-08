@@ -91,6 +91,7 @@ export function ReferenceDataPage({ kind }) {
           "categories",
           "locations",
           "equipment",
+          "availability",
           "managed-equipment",
           "equipment-picker",
         ].map((key) => client.invalidateQueries({ queryKey: [key] })),

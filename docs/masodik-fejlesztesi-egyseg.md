@@ -55,4 +55,4 @@ További esetek: időhatárok, tiltott mezők, inaktív eszköz/törzsadat/felha
 
 ## Határok
 
-Az átadás/visszavétel, karbantartási szerkesztés, naptár, dátumszűrt katalógus és automatikus EXPIRED feldolgozó későbbi egység. A böngésző időzónájától függetlenül Europe/Budapest szerint alakítjuk át az időpontokat; a kettős őszi óra és a hiányzó tavaszi időpont helyett másik időpontot kell választani.
+E dokumentum az eredeti foglalási egységet rögzíti. Azóta az átadás/visszavétel, karbantartási szerkesztés, automatikus EXPIRED feldolgozó, valamint a [naptár és dátumszűrt katalógus](naptar-es-idoszakszures.md) is elkészült; az aktuális állapotot a README foglalja össze. A böngésző időzónájától függetlenül Europe/Budapest szerint alakítjuk át az időpontokat; a kettős őszi óra és a hiányzó tavaszi időpont helyett másik időpontot kell választani.

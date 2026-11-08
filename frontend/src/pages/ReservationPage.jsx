@@ -65,6 +65,8 @@ export function ReservationPage() {
     onSuccess: (reservation) => {
       client.setQueryData(["reservation", id], reservation);
       client.invalidateQueries({ queryKey: ["reservations"] });
+      client.invalidateQueries({ queryKey: ["availability"] });
+      client.invalidateQueries({ queryKey: ["equipment"] });
       client.invalidateQueries({ queryKey: ["reservation-events", id] });
       setNotice(
         "A művelet sikerült. Az állapot és az eseménytörténet frissült.",

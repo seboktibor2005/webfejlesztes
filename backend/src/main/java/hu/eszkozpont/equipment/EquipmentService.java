@@ -1,12 +1,14 @@
 package hu.eszkozpont.equipment;
 
 import hu.eszkozpont.common.*;
+import hu.eszkozpont.equipment.availability.AvailabilityService;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
+import java.time.Instant;
 
 @Service
 @Transactional(readOnly = true)
@@ -15,11 +17,13 @@ public class EquipmentService {
     private final CategoryRepository categories;
     private final LocationRepository locations;
     private final EquipmentMapper mapper;
-    public EquipmentService(EquipmentRepository equipment, CategoryRepository categories, LocationRepository locations, EquipmentMapper mapper) {
+    private final AvailabilityService availability;
+    public EquipmentService(EquipmentRepository equipment, CategoryRepository categories, LocationRepository locations, EquipmentMapper mapper, AvailabilityService availability) {
         this.equipment = equipment; this.categories = categories; this.locations = locations; this.mapper = mapper;
+        this.availability = availability;
     }
 
-    public PageResponse<EquipmentResponse> list(String q, Long categoryId, Long locationId, int page, int size, String sort, boolean management) {
+    public PageResponse<EquipmentResponse> list(String q, Long categoryId, Long locationId, int page, int size, String sort, boolean management, Instant startsAt, Instant endsAt) {
         if (page < 0 || size < 1 || size > 100 || q != null && q.length() > 120
                 || categoryId != null && categoryId < 1 || locationId != null && locationId < 1) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "INVALID_FILTER", "Érvénytelen keresési vagy lapozási paraméter.");
@@ -46,6 +50,7 @@ public class EquipmentService {
             }
             return cb.and(conditions.toArray(jakarta.persistence.criteria.Predicate[]::new));
         };
+        if (startsAt != null || endsAt != null) specification = specification.and(availability.availableDuring(startsAt, endsAt));
         return PageResponse.of(equipment.findAll(specification, PageRequest.of(page, size, order.and(Sort.by("id")))).map(mapper::toResponse));
     }
 

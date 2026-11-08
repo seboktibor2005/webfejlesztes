@@ -1,11 +1,11 @@
-# Ellenőrzési jegyzőkönyv – alapok, foglalás, kölcsönzés, kezelés és lejárat
+# Ellenőrzési jegyzőkönyv – EszközPont
 
-2026. november 5. A tesztek helyben ténylegesen lefutottak; nem pusztán tervezett ellenőrzések.
+Frissítve: 2026. november 8. A tesztek helyben ténylegesen lefutottak; nem pusztán tervezett ellenőrzések. Az alábbi böngészős lista a korábbi és jelenlegi egységek ellenőrzéseit is rögzíti.
 
 ## Automatikus ellenőrzések
 
-- Backend: **104 teszt, 0 hiba, 0 kihagyás**. Ebből 12 alapfunkció, 20 foglalási, 22 kölcsönzési, 25 kezelési, 23 törzsadat-/lejárati integrációs eset, 1 ütemező-integrációs eset és 1 job-unit teszt. Az integrációs tesztek valódi PostgreSQL18.3-on, Flyway V1–V4 migrációval és Hibernate-sémavalidálással futnak; Java26.0.2.1 futtató / release25 cél.
-- Frontend: **39 React/Vitest teszt** sikeres. Ebből 11 kezelési eset és 10 törzsadat-/lejárati eset. Az utóbbiak a létrehozási/szerkesztési mezőket, hiányzó opcionális leírást, verziót, megerősítéseket, sikeres és hivatkozás miatt tiltott törlést, megőrzött piszkozatot, kért újratöltést, állapotszűrést és a rendszeres lejárat eseményfeliratát ellenőrzik. Az összes korábbi teszt is lefutott.
+- Backend: **122 teszt, 0 hiba, 0 kihagyás**. Ebből 12 alapfunkció, 20 foglalási, 22 kölcsönzési, 25 kezelési, 23 törzsadat-/lejárati integrációs eset, 18 naptár-/időszakszűrési eset, 1 ütemező-integrációs eset és 1 job-unit teszt. Az integrációs tesztek valódi PostgreSQL18.3-on, Flyway V1–V4 migrációval és Hibernate-sémavalidálással futnak; Java26.0.2.1 futtató / release25 cél.
+- Frontend: **53 React/Vitest teszt** sikeres. A korábbi 39 mellett 14 új eset készült a dátumszűréshez és naptárhoz. Ellenőrzik az alkalmazás előtti űrlapállapotot, UTC/URL-paramétereket, lapozás visszaállítását, megőrzött többi szűrőt, hiba utáni adatmegőrzést, adatlapra és igénylésbe átvitelt, hétnavigációt, globális akadályjelzést, újrapróbálást és az óraátállítás két irányát. Az összes korábbi teszt is lefutott.
 - Backend csomagolás: sikeres futtatható Spring Boot jar.
 - Frontend build: sikeres Vite production build.
 
@@ -26,6 +26,8 @@ A törzsadatcsomag a két teljes életciklust, normalizálást, egyediséget (k�
 A lejárati tesztek ellenőrzik a pontos endsAt határt és az azt 1 nanoszekundummal megelőző időt, mindkét kiinduló állapotot, a kölcsönzések kizárását, a közben visszavont jelöltet, a legfeljebb 100-as rendezett adagot és az audit-visszagörgetést. Két lejárati parancs, illetve lejárat és visszavonás versenyében egyetlen végállapot és egyetlen lezáró esemény marad. Egy unit teszt igazolja a hibás rekord utáni folytatást.
 
 A külön ReservationExpirySchedulerIntegrationTest valóban elindítja a Spring-ütemezőt saját PostgreSQL-adatbázissal. Rövid, csak tesztbeli időközzel, közvetlen service-parancs nélkül lezár egy múltbeli igényt, ismételt futások után is egy eseménnyel. Valódi bejelentkezéssel kapott JWT-vel az API-ban is ellenőrzi az EXPIRED állapotot és a null actorú eseményt. A többi integrációs tesztben az ütemező kikapcsolt, hogy ne zavarja az órával vezérelt teszteseteket.
+
+A naptár-/szűrési csomag bizonyítja a 401-es védelmet, a másik felhasználó adatainak anonimizálását és a három szerepkör azonos foglaltsági válaszát. Vizsgálja az intervallumok metszetét, típusát, rendezését, a pontos csatlakozást, hibás vagy hiányos dátumokat, 90 napos olvasási korlátot, a keresés 1 óra–7 nap/60 nap határait, offseteket és inaktív eszközök elrejtését. A lapozási tesztben az első két eszköz blokkolt: a szabad találatok száma és második oldala mégis helyes. Külön esetben keresés után új jóváhagyás készül: az ezt követő igénylés 409, nincs elvesző ütközésellenőrzés. A PostgreSQL-es késéshatárt pontosan a határidőnél és a tárolási pontosságnak megfelelően 1 mikroszekundummal utána ellenőrizzük.
 
 ## Böngészős próba
 
@@ -50,6 +52,9 @@ A külön ReservationExpirySchedulerIntegrationTest valóban elindítja a Spring
 - Admin saját megjelenített nevének módosítása áttekintéssel: mentés után új belépés szükséges. Újrabelépés után az eredeti név visszaállítva, majd ismét új belépés. A szerepkör és tiltás változatlan maradt a kézi próbában; ezek működését az API-tesztek bizonyítják.
 - V4 migráció sikeresen lefutott a meglévő helyi adatokon. Adminnal kategória létrehozása és szerkesztése, archiválása, visszaaktiválása, majd ismét archiválása a tényleges felületen.
 - Tárolási hely felvétele, kódjának nagybetűs normalizálása, helyiségének szerkesztése, archiválás megerősítéssel és Archivált szűrés. 390×844-es mobilnézetben az oldal nem csordul túl; a táblázat saját keretben görgethető. Az ellenőrzéshez felvett külön kategória és helyszín archiváltan megmarad, az eredeti demótörzsadatok változatlanok.
+- Időszakra szűrt katalógus a valódi backenddel; az URL UTC-időpontokat tartalmaz. Az eszközadatlap igénylőűrlapja ugyanazt az időszakot mutatja budapesti időben.
+- Külön, 23:00–02:00 demóigény benyújtása, másik kezelővel jóváhagyása. A heti naptárban 23:00–24:00, majd 00:00–02:00 jelenik meg, név és cél nélkül. A katalógusban az átfedő időszakra nulla, a pontosan 02:00-kor csatlakozó egyórás időszakra egy Canon-találat.
+- A naptár390×844-es nézetben egymás alatti napkártyákkal, oldalszintű vízszintes túlcsordulás nélkül. A böngésző ideiglenes mérete visszaállítva. A demóigény visszavonása után kézi naptárfrissítéssel a két akadály eltűnt; az igény és eseményei megmaradtak. A vizsgált hallgatói lapon nem keletkezett böngészőkonzol-hiba.
 
 A foglalási böngészőpróba helyi demóadatai megmaradnak; a tesztkörnyezet nem törli őket. A kipróbált időpontok elmúltával a bemutatóhoz új, jövőbeli időszakot kell megadni.
 
@@ -57,4 +62,4 @@ Az első böngészős próba megmutatta a localhost / 127.0.0.1 CORS-eltérést;
 
 ## Ellenőrzési határok
 
-Docker/Compose ebben a környezetben nincs kipróbálva. Nincs éles telepítés vagy külső hálózati teszt. A naptár, dátumszűrt katalógus és dashboard még tervezett. A késés, a párhuzamos adminvédelem és a tényleges ütemezett lejárat határait automatizált teszt bizonyítja; a kézi böngészőpróba nem várta ki a többórás visszahozási határidőt, nem módosított adminjogot és nem várt ki külön lejáratot. A végleges törlést saját, ideiglenes tesztadatbázisban ellenőriztük, a meglévő helyi demóadatokat nem töröltük.
+Docker/Compose ebben a környezetben nincs kipróbálva. Nincs éles telepítés vagy külső hálózati teszt. A dashboard még tervezett. A késés, a párhuzamos adminvédelem és a tényleges ütemezett lejárat határait automatizált teszt bizonyítja; a kézi böngészőpróba nem várta ki a többórás visszahozási határidőt, nem módosított adminjogot és nem várt ki külön lejáratot. A végleges törlést saját, ideiglenes tesztadatbázisban ellenőriztük, a meglévő helyi demóadatokat nem töröltük. A naptár a jelenlegi akadályokat mutatja, történeti használati statisztikát nem helyettesít.

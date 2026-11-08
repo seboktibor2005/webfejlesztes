@@ -58,6 +58,8 @@ export function LoanPanel({ reservation }) {
       }),
       client.invalidateQueries({ queryKey: ["reservations"] }),
       client.invalidateQueries({ queryKey: ["loans"] }),
+      client.invalidateQueries({ queryKey: ["availability"] }),
+      client.invalidateQueries({ queryKey: ["equipment"] }),
     ]);
   const mutation = useMutation({
     mutationFn: async () => {

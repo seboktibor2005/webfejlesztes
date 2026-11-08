@@ -15,6 +15,7 @@ import { api } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
 import { EquipmentArt } from "../components/EquipmentArt";
 import { EmptyState, ErrorState, LoadingCards } from "../components/Feedback";
+import { CatalogPeriodFilter } from "../availability/CatalogPeriodFilter";
 
 export function CatalogPage({ management = false }) {
   const { token, user } = useAuth();
@@ -25,6 +26,25 @@ export function CatalogPage({ management = false }) {
   const category = params.get("categoryId") || "";
   const location = params.get("locationId") || "";
   const sort = params.get("sort") || "name,asc";
+  const startsAt = management ? "" : params.get("startsAt") || "";
+  const endsAt = management ? "" : params.get("endsAt") || "";
+  const periodQuery = new URLSearchParams();
+  if (startsAt) periodQuery.set("startsAt", startsAt);
+  if (endsAt) periodQuery.set("endsAt", endsAt);
+  function applyPeriod(start, end) {
+    setParams(
+      (previous) => {
+        const next = new URLSearchParams(previous);
+        next.delete("page");
+        if (start) next.set("startsAt", start);
+        else next.delete("startsAt");
+        if (end) next.set("endsAt", end);
+        else next.delete("endsAt");
+        return next;
+      },
+      { replace: true },
+    );
+  }
   function filter(name, value) {
     setParams(
       (previous) => {
@@ -55,6 +75,8 @@ export function CatalogPage({ management = false }) {
   if (debouncedSearch) query.set("q", debouncedSearch);
   if (category) query.set("categoryId", category);
   if (location) query.set("locationId", location);
+  if (startsAt) query.set("startsAt", startsAt);
+  if (endsAt) query.set("endsAt", endsAt);
   const equipment = useQuery({
     queryKey: ["equipment", management, query.toString()],
     queryFn: ({ signal }) =>
@@ -62,8 +84,9 @@ export function CatalogPage({ management = false }) {
         token,
         signal,
       }),
+    refetchInterval: startsAt || endsAt ? 30_000 : false,
   });
-  const hasFilters = search || category || location;
+  const hasFilters = search || category || location || startsAt || endsAt;
   function reset() {
     setParams({}, { replace: true });
   }
@@ -137,6 +160,14 @@ export function CatalogPage({ management = false }) {
             Egyetemi eszköztár
           </span>
         </div>
+        {!management && (
+          <CatalogPeriodFilter
+            startsAt={startsAt}
+            endsAt={endsAt}
+            onApply={applyPeriod}
+            onClear={() => applyPeriod("", "")}
+          />
+        )}
         <div className="filter-bar">
           <label className="search-input">
             <Search size={19} />
@@ -234,7 +265,9 @@ export function CatalogPage({ management = false }) {
                   >
                     <span />
                     {item.lifecycle === "ACTIVE"
-                      ? "Az eszköztárban"
+                      ? !management && startsAt && endsAt
+                        ? "Az időszakra igényelhető"
+                        : "Az eszköztárban"
                       : "Kivonva"}
                   </span>
                 </div>
@@ -256,7 +289,7 @@ export function CatalogPage({ management = false }) {
                       </Link>
                     ) : item.lifecycle === "ACTIVE" ? (
                       <Link
-                        to={`/eszkozok/${item.id}`}
+                        to={`/eszkozok/${item.id}${periodQuery.size ? `?${periodQuery}` : ""}`}
                         aria-label={`${item.name} részletei`}
                       >
                         <ArrowRight size={19} />

@@ -54,7 +54,7 @@ public class ReservationService {
         var item = lockEquipment(request.equipmentId());
         var actor = activeUser(actorId);
         var now = clock.instant();
-        validatePeriod(request.startsAt(), request.endsAt(), now);
+        ReservationPeriods.validate(request.startsAt(), request.endsAt(), now);
         checkAvailable(item, request.startsAt(), request.endsAt(), now);
         var reservation = new Reservation();
         reservation.setEquipment(item);
@@ -206,19 +206,6 @@ public class ReservationService {
         }
         if (reservations.hasBlockingMaintenance(item.getId(), start, end, now) || reservations.hasOverdueLoan(item.getId(), now)) {
             throw error(HttpStatus.CONFLICT, "EQUIPMENT_UNAVAILABLE", "Az eszköz karbantartás vagy késedelmes visszahozás miatt nem foglalható.");
-        }
-    }
-
-    private void validatePeriod(Instant start, Instant end, Instant now) {
-        if (!start.isAfter(now) || start.isAfter(now.plus(Duration.ofDays(60)))) {
-            throw error(HttpStatus.BAD_REQUEST, "INVALID_PERIOD", "Az átvétel jövőbeli, legfeljebb 60 nappal későbbi időpont legyen.");
-        }
-        var duration = Duration.between(start, end);
-        if (duration.compareTo(Duration.ofHours(1)) < 0 || duration.compareTo(Duration.ofDays(7)) > 0) {
-            throw error(HttpStatus.BAD_REQUEST, "INVALID_PERIOD", "A foglalás időtartama legalább 1 óra és legfeljebb 7 nap lehet.");
-        }
-        if (start.getNano() != 0 || end.getNano() != 0 || start.getEpochSecond() % 60 != 0 || end.getEpochSecond() % 60 != 0) {
-            throw error(HttpStatus.BAD_REQUEST, "INVALID_PERIOD", "Az időpontokat egész percre pontosan add meg.");
         }
     }
 

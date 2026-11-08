@@ -85,4 +85,4 @@ A böngészős ellenőrzés során külön demókategória és -helyszín kész�
 
 ## Következő egység
 
-A naptár, az időszakra szűrt katalógus és a szerepkörhöz igazított, valódi adatokból épülő dashboard még tervezett. Ezekhez az itt kialakított archiválási és lejárati szabályokat is figyelembe kell venni. Új szolgáltatás vagy telepítés ehhez az egységhez nem szükséges.
+Az itt ismertetett egység után a [naptár és az időszakra szűrt katalógus](naptar-es-idoszakszures.md) is elkészült. A szerepkörhöz igazított, valódi adatokból épülő dashboard még tervezett. A fenti tesztszám az akkori egység állapotát rögzíti; az aktuális összesítés az ellenőrzési jegyzőkönyvben található. Új szolgáltatás vagy telepítés ehhez az egységhez nem szükséges.

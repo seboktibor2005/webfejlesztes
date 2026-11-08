@@ -91,6 +91,18 @@ Minden jelölt feldolgozása külön, proxyn keresztül hívott @Transactional s
 
 Dupla ütemezőfutás vagy több alkalmazáspéldány esetén a zár utáni ellenőrzés megakadályozza a dupla eseményt. Egy rekord hibáját a job naplózza, a többi jelöltet folytatja; a következő futás újra próbálhatja. A szabálytesztekben kikapcsoljuk a jobot és injektált órával léptetünk. Külön integrációs teszt tényleges ütemezővel, saját adatbázisban, rövid tesztidőközzel bizonyítja a bekötést és a rendszeresemény API-olvasását.
 
+## ADR-013: Anonimizált foglaltság és adatbázisban szűrt katalógus
+
+Az equipment/availability alcsomag csak olvas. A két új response record az eszközazonosítót, időpontokat, akadálytípust és késési jelzőket tartalmazza. A foglalásból és karbantartásból JPQL konstruktorprojekció csak a három szükséges intervallummezőt olvassa; nincs felhasználó-, cél- vagy indoklekérés az intervallumokhoz. Minden belépett szerepkör ugyanazt az anonimizált nézetet kapja. Az aktív katalóguson kívüli eszközre ez a végpont is 404-et ad.
+
+A meglévő keresési Specification az időszak megadásakor három korrelált NOT EXISTS feltétellel bővül: átfedő APPROVED foglalás, átfedő vagy túlfutott OPEN karbantartás, illetve késedelmes nyitott kölcsönzés. A lapozás és találatszám már a szűrt adatbázis-eredményből készül; nincs oldalanként utólag eltávolított találat és nincs eszközönkénti akadálylekérdezés. Az EquipmentMapper és EntityGraph megmarad a katalógusválaszokhoz.
+
+A ReservationPeriods statikus validátorban közös a keresés és az új igény időablak-szabálya. Nem építünk általános időszakkeretrendszert: a naptári olvasás más célt szolgál, ezért külön, legfeljebb 90×24 órás, múltbeli napokat is megengedő ablakot használ. A megjelenített intervallumokat a service erre az ablakra vágja és rendezi. Az olvasás nem kér üzleti írászárat és nem foglal le semmit; az író parancsok korábbi eszközsorzáras ellenőrzése megmarad.
+
+A frontend külön űrlapállapotot tart a még nem alkalmazott keresési időpontokhoz. A megerősített időszak UTC-s URL-paraméter, így a lapozás, visszanavigálás és adatlapmegnyitás megőrzi; az igénylőűrlap budapesti értékekkel indul. A naptár külön kezeli a budapesti naptári napokat és UTC-időpontokat: egy óraátállítási hét 167 vagy 169 valós óra is lehet. A napi metszetek a valós naphosszhoz igazodnak; éjfél végpontja 24:00.
+
+A heti nézet saját CSS-sel és egyszerű napkártyákkal készül, új naptárkönyvtár nélkül. Mobilon egymás alá rendeződik. A két globális akadályjelző figyelmeztetése az üres napot sem ígéri szabadnak. A naptár és időszakra szűrt lista 30 másodpercenként frissül, a kapcsolódó író műveletek a releváns query cache-t is érvénytelenítik; kézi naptárfrissítés is van. A korábbi adatbázisséma és függőségek változatlanok.
+
 ## Források
 
 - https://docs.spring.io/spring-security/reference/servlet/oauth2/resource-server/jwt.html
@@ -104,3 +116,5 @@ Dupla ütemezőfutás vagy több alkalmazáspéldány esetén a zár utáni elle
 - https://www.postgresql.org/docs/current/functions-admin.html#FUNCTIONS-ADVISORY-LOCKS
 - https://docs.spring.io/spring-framework/reference/integration/scheduling.html
 - https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/scheduling/annotation/Scheduled.html
+- https://docs.spring.io/spring-data/jpa/reference/jpa/specifications.html
+- https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/time/Duration.html

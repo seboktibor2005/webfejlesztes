@@ -5,8 +5,9 @@ import { CalendarPlus, ArrowRight } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { api } from "../api/client";
 import { fromBudapestInput, toBudapestInput } from "./format";
+import { inputPeriod } from "../availability/calendar";
 
-export function ReservationForm({ equipmentId }) {
+export function ReservationForm({ equipmentId, initialPeriod }) {
   const { token } = useAuth();
   const navigate = useNavigate();
   const client = useQueryClient();
@@ -14,9 +15,10 @@ export function ReservationForm({ equipmentId }) {
     0,
     10,
   );
+  const supplied = inputPeriod(initialPeriod);
   const [values, setValues] = useState({
-    startsAt: `${tomorrow}T09:00`,
-    endsAt: `${tomorrow}T12:00`,
+    startsAt: supplied.startsAt || `${tomorrow}T09:00`,
+    endsAt: supplied.endsAt || `${tomorrow}T12:00`,
     purpose: "",
   });
   const mutation = useMutation({
@@ -33,6 +35,8 @@ export function ReservationForm({ equipmentId }) {
       }),
     onSuccess: (reservation) => {
       client.invalidateQueries({ queryKey: ["reservations"] });
+      client.invalidateQueries({ queryKey: ["availability", equipmentId] });
+      client.invalidateQueries({ queryKey: ["equipment"] });
       navigate(`/foglalasok/${reservation.id}`, { state: { created: true } });
     },
   });

@@ -216,6 +216,8 @@ export function MaintenanceCreatePage() {
       }),
     onSuccess: (saved) => {
       client.invalidateQueries({ queryKey: ["maintenance-list"] });
+      client.invalidateQueries({ queryKey: ["availability"] });
+      client.invalidateQueries({ queryKey: ["equipment"] });
       client.invalidateQueries({ queryKey: ["reservations"] });
       client.invalidateQueries({ queryKey: ["equipment-events"] });
       navigate(`/karbantartasok/${saved.id}`);
@@ -373,6 +375,8 @@ export function MaintenanceDetailPage() {
       client.invalidateQueries({ queryKey: ["reservation"] }),
       client.invalidateQueries({ queryKey: ["reservation-events"] }),
       client.invalidateQueries({ queryKey: ["loans"] }),
+      client.invalidateQueries({ queryKey: ["availability"] }),
+      client.invalidateQueries({ queryKey: ["equipment"] }),
     ]);
   const mutation = useMutation({
     mutationFn: () =>

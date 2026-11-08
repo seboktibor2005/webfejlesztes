@@ -74,15 +74,23 @@ Az új rekord aktív. A ReferenceDataMapper külön létrehozási és módosít�
 
 A RESERVATION_EXPIRED esemény a meglévő AuditEventResponse szerződését használja: actor=null („Rendszer”), fromState=REQUESTED/APPROVED, toState=EXPIRED. A lejárati feldolgozó nem bővíti az API-t új parancs DTO-val.
 
+### Foglaltsági DTO-k – elkészültek
+
+| DTO                  | Mezők                                                                                                                                                | Jelentés                                                                                                                              |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| BlockingInterval     | startsAt:Instant, endsAt:Instant, kind:string                                                                                                        | RESERVATION vagy MAINTENANCE; a kért naptári ablakra levágott intervallum. Nincs rekordazonosító, személy vagy megjegyzés.            |
+| AvailabilityResponse | equipmentId:long, from:Instant, to:Instant, checkedAt:Instant, blockingIntervals:BlockingInterval[], overdueLoan:boolean, overdueMaintenance:boolean | Legfeljebb 90×24 órás növekvő ablak, rendezett intervallumlista; az üres lista önmagában nem írja felül a két globális akadályjelzőt. |
+
+Nincs új írási DTO. Az időszakra szűrt katalógus a meglévő EquipmentResponse szerződést adja, nem küld tartós „szabad” állapotot. Az anonimizált intervallumokat a repository JPQL konstruktorprojekcióval olvassa: a személyes mezők nem kerülnek be a válaszhoz betöltött adatok közé. A MapStruct továbbra is az eszközválaszokat és a meglévő üzleti DTO-kat készíti.
+
 ## Következő egységek DTO-terve – még nincs implementálva
 
-| DTO                         | Mezők                                                                                                                                   | Kötelező szabályok                                                                           |
-| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| ProfileUpdateRequest        | displayName                                                                                                                             | Nem üres, max100; e-mail és szerep külön folyamat, itt nem változik.                         |
-| PasswordChangeRequest       | currentPassword, newPassword                                                                                                            | Jelenlegi jelszó ellenőrzése; újra regisztrációs korlátok; tokenek visszavonása.             |
-| AvailabilityResponse        | equipmentId, from, to, blockingIntervals: {startsAt,endsAt,kind}[], overdueLoan:boolean, overdueMaintenance:boolean                     | Kind: RESERVATION/MAINTENANCE; nincs foglalóazonosító, cél vagy foglalásazonosító. max90nap. |
-| UserDashboardResponse       | pendingCount, activeLoanCount, nextPickup?:ReservationSummaryResponse, nextReturn?:LoanResponse                                         | Csak saját adatok.                                                                           |
-| ManagementDashboardResponse | pendingCount, todayPickupCount, todayReturnCount, overdueLoanCount, maintenanceCount, loansByCategory:{categoryId,categoryName,count}[] | Utolsó30nap kategóriaösszesítés; adatbázisoldali számítás.                                   |
+| DTO                         | Mezők                                                                                                                                   | Kötelező szabályok                                                               |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| ProfileUpdateRequest        | displayName                                                                                                                             | Nem üres, max100; e-mail és szerep külön folyamat, itt nem változik.             |
+| PasswordChangeRequest       | currentPassword, newPassword                                                                                                            | Jelenlegi jelszó ellenőrzése; újra regisztrációs korlátok; tokenek visszavonása. |
+| UserDashboardResponse       | pendingCount, activeLoanCount, nextPickup?:ReservationSummaryResponse, nextReturn?:LoanResponse                                         | Csak saját adatok.                                                               |
+| ManagementDashboardResponse | pendingCount, todayPickupCount, todayReturnCount, overdueLoanCount, maintenanceCount, loansByCategory:{categoryId,categoryName,count}[] | Utolsó30nap kategóriaösszesítés; adatbázisoldali számítás.                       |
 
 ## Hibaválasz
 

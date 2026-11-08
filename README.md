@@ -2,7 +2,7 @@
 
 Magyar nyelvű egyetemi eszközkatalógus, foglalás- és kölcsönzéskezelő. Spring Boot + Java backend, React + JavaScript frontend, PostgreSQL adatbázis.
 
-## Jelenlegi állapot: törzsadatkezelés és automatikus lejárat
+## Jelenlegi állapot: foglaltsági naptár és időszakszűrés
 
 **Elkészült:** regisztráció, JWT-belépés, valódi kijelentkezés/tokenvisszavonás, három szerepkör, eszközkatalógus, adatlap, keresés, kategória/helyszín szűrés, rendezés, lapozás, kezelői teljes leltárlista és admin felhasználólista. Magyar, reszponzív felület. Nyolctáblás Flyway-séma. PostgreSQL-alapú integrációs tesztek és frontendtesztek.
 
@@ -14,9 +14,11 @@ Magyar nyelvű egyetemi eszközkatalógus, foglalás- és kölcsönzéskezelő. 
 
 **Törzsadatok:** adminisztrátori kategória- és tárolásihely-kezelés, keresés, állapotszűrés, lapozás, verziózott szerkesztés, archiválás/visszaaktiválás. Csak eszközhivatkozás nélküli rekord törölhető. Élő igény vagy nyitott kölcsönzés mellett az archiválás is tiltott; a párhuzamos eszközfelvitel és foglalás sem kerülheti meg ezt.
 
-**Automatikus lejárat:** a háttérfolyamat az időszak végén EXPIRED állapotba teszi az át nem vett REQUESTED/APPROVED igényeket, rendszerszintű eseménnyel. Kölcsönzést nem vesz vissza automatikusan. Összesen **104 backendteszt és 39 frontendteszt**.
+**Automatikus lejárat:** a háttérfolyamat az időszak végén EXPIRED állapotba teszi az át nem vett REQUESTED/APPROVED igényeket, rendszerszintű eseménnyel. Kölcsönzést nem vesz vissza automatikusan.
 
-**Következik:** naptár, időszakra szűrt katalógus és valódi adatokból épülő dashboard. Ezek még tervezett funkciók.
+**Foglaltság:** az eszközadatlapon heti naptár mutatja a jóváhagyott foglalásokat és nyitott karbantartásokat, személyes adatok nélkül. A katalógus átvételi/visszahozási időszakra is szűr; a keresést az adatbázis végzi a lapozás előtt. Késedelmes kölcsönzés és túlfutott karbantartás a későbbi időszakot is blokkolja. A kiválasztott időpontok továbbkerülnek az igénylőűrlapba. **122 backendteszt és 53 frontendteszt sikeres.**
+
+**Következik:** szerepkörhöz igazított, valódi adatokból épülő dashboard, majd a védési folyamat végigpróbálása. A dashboard még tervezett funkció.
 
 ## Tervezési dokumentumok
 
@@ -29,6 +31,7 @@ Magyar nyelvű egyetemi eszközkatalógus, foglalás- és kölcsönzéskezelő. 
 - [Átadás, visszavétel és késések – működés és ellenőrzés](docs/harmadik-fejlesztesi-egyseg.md)
 - [Karbantartás, eszköz- és felhasználószerkesztés](docs/kezelesi-fejlesztesi-egyseg.md)
 - [Törzsadatok és automatikus foglaláslejárat](docs/torzsadatok-es-lejarat.md)
+- [Foglaltsági naptár és időszakra szűrt katalógus](docs/naptar-es-idoszakszures.md)
 - [Ellenőrzési jegyzőkönyv](docs/ellenorzes.md)
 
 ## Helyi indítás Windows alatt, Docker nélkül

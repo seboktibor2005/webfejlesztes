@@ -189,6 +189,7 @@ function EquipmentForm({ item, categories, locations, reload }) {
       setNotice("Az eszköz adatai mentve.");
       client.setQueryData(["managed-equipment", String(saved.id)], saved);
       client.invalidateQueries({ queryKey: ["equipment"] });
+      client.invalidateQueries({ queryKey: ["availability"] });
       client.invalidateQueries({ queryKey: ["equipment-picker"] });
       client.invalidateQueries({ queryKey: ["equipment-events"] });
       if (!item) navigate(`/kezeles/${saved.id}`, { replace: true });
