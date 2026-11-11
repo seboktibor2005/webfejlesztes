@@ -32,21 +32,13 @@ export function ReservationsPage({ management = false }) {
     <main className="page reservation-page">
       <div className="page-heading">
         <div>
-          <span className="eyebrow">
-            {management ? "ESZKÖZFELELŐSI MUNKALISTA" : "A TERVEID EGY HELYEN"}
-          </span>
-          <h1>
-            {management ? "Dönts a következő lehetőségről." : "A foglalásaid."}
-          </h1>
+          <h1>{management ? "Igények elbírálása" : "Saját foglalások"}</h1>
           <p>
             {management
               ? "Bíráld el a beérkező igényeket. Az ütközéseket a rendszer a jóváhagyáskor is ellenőrzi."
               : "Kövesd az igényléseidet és a hozzájuk tartozó döntéseket."}
           </p>
         </div>
-        <span className="heading-symbol">
-          <CalendarDays size={28} />
-        </span>
       </div>
       <div className="reservation-filters">
         <label>

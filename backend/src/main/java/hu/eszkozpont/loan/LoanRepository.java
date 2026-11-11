@@ -1,5 +1,7 @@
 package hu.eszkozpont.loan;
 
+import hu.eszkozpont.dashboard.CategoryLoanCount;
+import hu.eszkozpont.dashboard.DashboardAppointment;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.*;
@@ -7,6 +9,26 @@ import java.util.*;
 import java.time.Instant;
 
 public interface LoanRepository extends JpaRepository<Loan, Long>, JpaSpecificationExecutor<Loan> {
+    long countByReservation_Requester_IdAndReturnedAtIsNull(long requesterId);
+    long countByReturnedAtIsNullAndDueAtGreaterThanEqualAndDueAtLessThan(Instant dayStart, Instant dayEnd);
+    long countByReturnedAtIsNullAndDueAtLessThan(Instant now);
+
+    @Query("""
+            select new hu.eszkozpont.dashboard.DashboardAppointment(l.reservation.id, l.equipment.name, l.equipment.inventoryCode, l.dueAt)
+            from Loan l where l.reservation.requester.id = :requesterId and l.returnedAt is null
+            order by l.dueAt, l.id
+            """)
+    List<DashboardAppointment> findDashboardReturns(long requesterId, Pageable page);
+
+    @Query("""
+            select new hu.eszkozpont.dashboard.CategoryLoanCount(c.id, c.name, count(l))
+            from Loan l join l.equipment.category c
+            where l.issuedAt >= :from and l.issuedAt <= :now
+            group by c.id, c.name
+            order by count(l) desc, c.name, c.id
+            """)
+    List<CategoryLoanCount> countIssuedByCategory(Instant from, Instant now);
+
     @Override
     @EntityGraph(attributePaths = {"reservation", "reservation.requester", "equipment", "issuedBy", "returnedBy", "maintenance"})
     Optional<Loan> findById(Long id);

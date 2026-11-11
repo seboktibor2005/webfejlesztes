@@ -1,28 +1,31 @@
 .period-search {
-  padding: 22px;
-  margin-bottom: 24px;
-  border: 1px solid #dce5d8;
-  border-radius: 16px;
-  background: #f0f4eb;
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--subtle);
 }
 .period-search-heading {
   display: flex;
-  gap: 12px;
+  gap: 8px;
+  flex-wrap: wrap;
   align-items: center;
-  color: #315d50;
-  margin-bottom: 18px;
+  color: var(--primary);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 750;
 }
-.period-search h3 {
-  margin: 0 0 5px;
-  font-size: 15px;
+.period-search-heading::-webkit-details-marker {
+  display: none;
 }
-.period-search-heading p {
-  margin: 0;
-  font-size: 12px;
-  color: #687762;
+.period-chevron {
+  margin-left: auto;
+}
+.period-search[open] .period-chevron {
+  transform: rotate(90deg);
 }
 .period-search-form {
   display: flex;
+  margin-top: 14px;
   gap: 12px;
   align-items: end;
   flex-wrap: wrap;
@@ -30,14 +33,20 @@
 .period-search-form label {
   display: grid;
   gap: 8px;
-  flex: 1 1 200px;
-  font-size: 11px;
+  flex: 1 1 175px;
+  font-size: 12px;
   font-weight: 650;
 }
 .period-search-form input {
   background: white;
   width: 100%;
   min-width: 0;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid #cbd3cb;
+  border-radius: 5px;
+  color: inherit;
+  font-size: 13px;
 }
 .period-search .input-help {
   display: block;
@@ -45,16 +54,15 @@
   line-height: 1.7;
 }
 .period-applied {
-  margin: 12px 0 0;
-  color: #205d50;
+  color: var(--muted);
   font-size: 12px;
   font-weight: 650;
 }
 .availability-calendar {
-  margin-top: 42px;
-  padding: 27px;
-  border: 1px solid #e1e5dc;
-  border-radius: 18px;
+  margin-top: 24px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
   background: #fff;
   min-width: 0;
 }
@@ -68,12 +76,11 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 22px;
-  margin: 12px 0 10px;
-  letter-spacing: -0.6px;
+  font-size: 19px;
+  margin: 0 0 7px;
 }
 .calendar-heading p {
-  color: #6f7b69;
+  color: var(--muted);
   font-size: 12px;
   line-height: 1.7;
   margin: 0;
@@ -83,8 +90,8 @@
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
-  padding: 22px 0;
-  border-bottom: 1px solid #e9ece4;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
 }
 .calendar-toolbar h3 {
   font-size: 15px;
@@ -102,9 +109,9 @@
   flex-wrap: wrap;
   gap: 16px;
   align-items: center;
-  margin: 19px 0;
-  color: #687762;
-  font-size: 11px;
+  margin: 12px 0;
+  color: var(--muted);
+  font-size: 12px;
 }
 .calendar-legend span {
   display: inline-flex;
@@ -127,14 +134,14 @@
 .calendar-week {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 8px;
+  gap: 4px;
 }
 .calendar-day {
   padding: 12px 9px;
-  min-height: 175px;
-  border: 1px solid #e5e9df;
-  border-radius: 11px;
-  background: #fbfcf9;
+  min-height: 135px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--canvas);
 }
 .calendar-day header {
   display: flex;
@@ -142,7 +149,7 @@
   align-items: start;
   gap: 3px;
   margin-bottom: 12px;
-  color: #71816c;
+  color: var(--muted);
 }
 .calendar-day header > span {
   font-size: 10px;
@@ -217,9 +224,9 @@
 }
 .day-empty {
   margin: 0;
-  color: #85907c;
-  font-size: 10px;
-  line-height: 1.7;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
 }
 .calendar-warning {
   padding: 16px 18px;
@@ -235,8 +242,8 @@
   margin: 6px 0 0;
 }
 .calendar-footnote {
-  font-size: 11px;
-  color: #7b8674;
+  font-size: 12px;
+  color: var(--muted);
   line-height: 1.8;
   margin: 20px 0 0;
 }
@@ -251,7 +258,6 @@
   }
 }
 @media (max-width: 650px) {
-  .period-search,
   .availability-calendar {
     padding: 18px;
   }

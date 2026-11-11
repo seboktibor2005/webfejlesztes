@@ -4,21 +4,19 @@ import { Link, useSearchParams } from "react-router-dom";
 import {
   ArrowDownAZ,
   ArrowRight,
-  Boxes,
   ChevronLeft,
   ChevronRight,
-  MapPin,
+  Plus,
   Search,
   SlidersHorizontal,
 } from "lucide-react";
 import { api } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
-import { EquipmentArt } from "../components/EquipmentArt";
 import { EmptyState, ErrorState, LoadingCards } from "../components/Feedback";
 import { CatalogPeriodFilter } from "../availability/CatalogPeriodFilter";
 
 export function CatalogPage({ management = false }) {
-  const { token, user } = useAuth();
+  const { token } = useAuth();
   const [params, setParams] = useSearchParams();
   const search = params.get("q") || "";
   const [debouncedSearch, setDebouncedSearch] = useState(search);
@@ -94,80 +92,21 @@ export function CatalogPage({ management = false }) {
     <main className="page catalog-page">
       <div className="page-heading">
         <div>
-          <span className="eyebrow">
-            {management
-              ? "ESZKÖZFELELŐSI NÉZET"
-              : "KÖZÖS ESZKÖZÖK, ÚJ LEHETŐSÉGEK"}
-          </span>
-          <h1>
-            {management
-              ? "Az eszközállomány."
-              : "Mi kell a következő ötletedhez?"}
-          </h1>
+          <h1>{management ? "Eszközállomány" : "Eszközkatalógus"}</h1>
           <p>
             {management
-              ? "Az aktív és kivont eszközök teljes, intézményi nyilvántartása."
-              : `Szia, ${user.displayName.split(" ").at(-1)}! Fedezd fel az egyetemi eszköztárat.`}
+              ? "Az aktív és a kivont eszközök nyilvántartása."
+              : "Itt kereshetsz kölcsönözhető eszközt az egyetemi munkádhoz."}
           </p>
         </div>
-        <span className="heading-symbol">
-          <Boxes size={30} strokeWidth={1.4} />
-        </span>
-      </div>
-      {management && (
-        <div className="management-toolbar">
+        {management && (
           <Link className="button primary" to="/kezeles/uj">
+            <Plus size={16} />
             Új eszköz felvétele
           </Link>
-        </div>
-      )}
-      <section className="catalog-banner">
-        <div>
-          <span className="small-label">A JÓ ÖTLETEKNEK HELYET ADUNK</span>
-          <h2>
-            Kevesebb akadály.
-            <br />
-            <em>Több alkotás.</em>
-          </h2>
-          <p>
-            Fedezz fel új eszközöket,
-            <br />
-            és hozd közelebb a terveidet.
-          </p>
-        </div>
-        <div className="banner-art">
-          <EquipmentArt code="FOTO-001" large />
-        </div>
-        <span className="banner-index">01 / ESZKÖZTÁR</span>
-      </section>
-      <section className="catalog-section" aria-label="Eszközkereső">
-        <div className="section-top">
-          <div>
-            <h2>
-              {management ? "Teljes leltár" : "Fedezd fel az eszközöket"}
-              <span className="count-badge">
-                {equipment.data?.page.totalElements ?? "…"}
-              </span>
-            </h2>
-            <p>
-              {management
-                ? "A kivont eszközök csak ebben a kezelői nézetben láthatók."
-                : "Válassz kategóriát, vagy keress rá egy konkrét eszközre."}
-            </p>
-          </div>
-          <span className="catalog-caption">
-            <span className="live-dot" />
-            Egyetemi eszköztár
-          </span>
-        </div>
-        {!management && (
-          <CatalogPeriodFilter
-            startsAt={startsAt}
-            endsAt={endsAt}
-            onApply={applyPeriod}
-            onClear={() => applyPeriod("", "")}
-          />
         )}
+      </div>
+      <section className="catalog-section" aria-label="Eszközkereső">
         <div className="filter-bar">
           <label className="search-input">
             <Search size={19} />
@@ -218,7 +157,7 @@ export function CatalogPage({ management = false }) {
             className={!category ? "selected" : ""}
             onClick={() => filter("categoryId", "")}
           >
-            Minden eszköz
+            Minden kategória
           </button>
           {categories.data?.map((item) => (
             <button
@@ -235,6 +174,14 @@ export function CatalogPage({ management = false }) {
             </button>
           )}
         </div>
+        {!management && (
+          <CatalogPeriodFilter
+            startsAt={startsAt}
+            endsAt={endsAt}
+            onApply={applyPeriod}
+            onClear={() => applyPeriod("", "")}
+          />
+        )}
         {(categories.isError || locations.isError) && (
           <p className="form-error" role="alert">
             Néhány szűrő nem tölthető be.{" "}
@@ -248,6 +195,14 @@ export function CatalogPage({ management = false }) {
             </button>
           </p>
         )}
+        <div className="catalog-results-heading">
+          <h2>Találatok</h2>
+          {equipment.data && !equipment.isError && (
+            <span role="status">
+              {equipment.data.page.totalElements} eszköz
+            </span>
+          )}
+        </div>
         {equipment.isPending ? (
           <LoadingCards />
         ) : equipment.isError ? (
@@ -255,50 +210,51 @@ export function CatalogPage({ management = false }) {
         ) : equipment.data.content.length === 0 ? (
           <EmptyState reset={reset} />
         ) : (
-          <div className="equipment-grid">
+          <div className="equipment-list">
+            <div
+              className="equipment-list-head equipment-row"
+              aria-hidden="true"
+            >
+              <span>Eszköz</span>
+              <span>Leltári szám</span>
+              <span>Tárolási hely</span>
+            </div>
             {equipment.data.content.map((item) => (
-              <article className="equipment-card" key={item.id}>
-                <div className="card-art-wrap">
-                  <EquipmentArt code={item.inventoryCode} />
-                  <span
-                    className={`lifecycle-badge ${item.lifecycle === "RETIRED" ? "retired" : ""}`}
-                  >
-                    <span />
-                    {item.lifecycle === "ACTIVE"
-                      ? !management && startsAt && endsAt
-                        ? "Az időszakra igényelhető"
-                        : "Az eszköztárban"
-                      : "Kivonva"}
-                  </span>
-                </div>
-                <div className="card-body">
-                  <span className="card-category">{item.category.name}</span>
+              <article className="equipment-row" key={item.id}>
+                <div className="equipment-row-main">
                   <h3>{item.name}</h3>
-                  <p className="card-description">{item.description}</p>
-                  <div className="card-footer">
-                    <span>
-                      <MapPin size={14} />
-                      {item.location.name}
+                  {item.description && <p>{item.description}</p>}
+                  {item.lifecycle === "RETIRED" ? (
+                    <span className="reservation-status status-cancelled">
+                      Kivonva
                     </span>
-                    {management ? (
-                      <Link
-                        to={`/kezeles/${item.id}`}
-                        aria-label={`${item.name} szerkesztése`}
-                      >
-                        <ArrowRight size={19} />
-                      </Link>
-                    ) : item.lifecycle === "ACTIVE" ? (
-                      <Link
-                        to={`/eszkozok/${item.id}${periodQuery.size ? `?${periodQuery}` : ""}`}
-                        aria-label={`${item.name} részletei`}
-                      >
-                        <ArrowRight size={19} />
-                      </Link>
-                    ) : (
-                      <span className="retired-label">Archivált</span>
-                    )}
-                  </div>
+                  ) : startsAt && endsAt ? (
+                    <span className="reservation-status status-approved">
+                      Az időszakra igényelhető
+                    </span>
+                  ) : null}
                 </div>
+                <div className="equipment-row-code">
+                  <code>{item.inventoryCode}</code>
+                  <span>{item.category.name}</span>
+                </div>
+                <div className="equipment-row-location">
+                  {item.location.name}
+                </div>
+                {(management || item.lifecycle === "ACTIVE") && (
+                  <Link
+                    className="equipment-row-link"
+                    to={
+                      management
+                        ? `/kezeles/${item.id}`
+                        : `/eszkozok/${item.id}${periodQuery.size ? `?${periodQuery}` : ""}`
+                    }
+                    aria-label={`${item.name} ${management ? "szerkesztése" : "részletei"}`}
+                  >
+                    {management ? "Szerkesztés" : "Adatlap"}
+                    <ArrowRight size={16} aria-hidden="true" />
+                  </Link>
+                )}
               </article>
             ))}
           </div>
@@ -329,10 +285,6 @@ export function CatalogPage({ management = false }) {
           </div>
         )}
       </section>
-      <footer className="page-footer">
-        <span>EszközPont · Közösen több lehetőség.</span>
-        <span>Az eszközök egyetemi projektekhez állnak rendelkezésre.</span>
-      </footer>
     </main>
   );
 }

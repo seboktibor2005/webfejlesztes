@@ -12,6 +12,7 @@ import { AuthProvider, useAuth } from "./auth/AuthContext";
 import { AppLayout } from "./components/AppLayout";
 import { AuthPage } from "./pages/AuthPage";
 import { CatalogPage } from "./pages/CatalogPage";
+import { DashboardPage } from "./pages/DashboardPage";
 import { EquipmentPage } from "./pages/EquipmentPage";
 import { UsersPage } from "./pages/UsersPage";
 import { ReservationsPage } from "./pages/ReservationsPage";
@@ -65,6 +66,7 @@ export default function App() {
             />
             <Route element={<Protected />}>
               <Route element={<AppLayout />}>
+                <Route path="/attekintes" element={<DashboardPage />} />
                 <Route
                   path="/eszkozok"
                   element={<CatalogPage key="catalog" />}
@@ -125,7 +127,7 @@ export default function App() {
                 </Route>
               </Route>
             </Route>
-            <Route path="/" element={<Navigate to="/eszkozok" replace />} />
+            <Route path="/" element={<Navigate to="/attekintes" replace />} />
             <Route
               path="*"
               element={

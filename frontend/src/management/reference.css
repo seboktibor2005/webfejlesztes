@@ -2,19 +2,18 @@
   display: flex;
   gap: 12px;
   border-bottom: 1px solid var(--border);
-  padding-bottom: 14px;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 .reference-tabs a {
   font-size: 13px;
   font-weight: 700;
-  padding: 10px 14px;
-  border-radius: 8px;
-  color: #6d7c64;
+  padding: 8px 4px;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
 }
 .reference-tabs a[aria-current="page"] {
-  background: #e6efdf;
-  color: #356239;
+  border-bottom-color: var(--primary);
+  color: var(--primary);
 }
 .reference-grid {
   display: grid;
@@ -44,8 +43,8 @@
 .reference-filters select {
   padding: 11px;
   min-width: 0;
-  border: 1px solid #d6dfcf;
-  border-radius: 8px;
+  border: 1px solid #cbd3cb;
+  border-radius: 5px;
   background: #fff;
   color: #35462e;
   font: inherit;

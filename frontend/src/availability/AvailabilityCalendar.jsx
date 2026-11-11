@@ -52,7 +52,6 @@ export function AvailabilityCalendar({ equipmentId, initialStart }) {
     >
       <div className="calendar-heading">
         <div>
-          <span className="eyebrow">TERVEZZ ELŐRE</span>
           <h2 id="availability-heading">
             <CalendarDays size={23} /> Foglaltsági naptár
           </h2>

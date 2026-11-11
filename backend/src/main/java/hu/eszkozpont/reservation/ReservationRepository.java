@@ -1,5 +1,6 @@
 package hu.eszkozpont.reservation;
 
+import hu.eszkozpont.dashboard.DashboardAppointment;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.*;
@@ -8,6 +9,27 @@ import java.util.Optional;
 import java.util.List;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Long>, JpaSpecificationExecutor<Reservation> {
+    long countByStatusAndStartsAtAfter(ReservationStatus status, Instant now);
+    long countByRequester_IdAndStatusAndStartsAtAfter(long requesterId, ReservationStatus status, Instant now);
+
+    @Query("""
+            select new hu.eszkozpont.dashboard.DashboardAppointment(r.id, r.equipment.name, r.equipment.inventoryCode, r.startsAt)
+            from Reservation r
+            where r.requester.id = :requesterId and r.status = hu.eszkozpont.reservation.ReservationStatus.APPROVED
+              and r.endsAt > :now
+              and not exists (select l.id from Loan l where l.reservation = r)
+            order by r.startsAt, r.id
+            """)
+    List<DashboardAppointment> findDashboardPickups(long requesterId, Instant now, Pageable page);
+
+    @Query("""
+            select count(r) from Reservation r
+            where r.status = hu.eszkozpont.reservation.ReservationStatus.APPROVED
+              and r.startsAt >= :dayStart and r.startsAt < :dayEnd and r.endsAt > :now
+              and not exists (select l.id from Loan l where l.reservation = r)
+            """)
+    long countDashboardPickups(Instant dayStart, Instant dayEnd, Instant now);
+
     @Query("select new hu.eszkozpont.equipment.availability.BlockingInterval(r.startsAt, r.endsAt, 'RESERVATION') from Reservation r where r.equipment.id = :equipmentId and r.status = hu.eszkozpont.reservation.ReservationStatus.APPROVED and r.startsAt < :to and r.endsAt > :from")
     List<hu.eszkozpont.equipment.availability.BlockingInterval> findAvailabilityIntervals(Long equipmentId, Instant from, Instant to);
 

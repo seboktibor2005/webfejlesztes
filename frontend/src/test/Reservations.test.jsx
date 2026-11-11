@@ -5,6 +5,7 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReservationForm } from "../reservations/ReservationForm";
 import { ReservationPage } from "../pages/ReservationPage";
+import { AppLayout } from "../components/AppLayout";
 
 let actor;
 vi.mock("../auth/AuthContext", () => ({
@@ -51,6 +52,29 @@ afterEach(() => {
 });
 
 describe("foglalás és elbírálás felülete", () => {
+  it.each([
+    ["USER", "Saját foglalások", "page"],
+    ["MANAGER", "Igények elbírálása", "location"],
+    ["ADMIN", "Igények elbírálása", "location"],
+  ])(
+    "%s szerepkörnél a részletekhez tartozó menüt emeli ki",
+    (role, label, current) => {
+      actor = { ...actor, role, displayName: "Minta Anna" };
+      render(
+        <MemoryRouter initialEntries={["/foglalasok/42"]}>
+          <AppLayout />
+        </MemoryRouter>,
+      );
+      expect(screen.getByRole("link", { current })).toHaveAccessibleName(label);
+      expect(screen.getByRole("link", { name: label })).toHaveClass("active");
+      if (role !== "USER") {
+        expect(
+          screen.getByRole("link", { name: "Saját foglalások" }),
+        ).not.toHaveClass("active");
+      }
+    },
+  );
+
   it("az igényt budapesti időpontból, tulajdonos és állapot beküldése nélkül adja fel", async () => {
     vi.stubGlobal(
       "fetch",

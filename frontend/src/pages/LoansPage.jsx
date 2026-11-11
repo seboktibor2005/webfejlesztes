@@ -26,13 +26,9 @@ export function LoansPage() {
     <main className="page reservation-page">
       <div className="page-heading">
         <div>
-          <span className="eyebrow">AMI MOST MOZGÁSBAN VAN</span>
-          <h1>Kölcsönzések.</h1>
+          <h1>Kölcsönzések</h1>
           <p>Kövesd az átadott eszközöket és a visszahozási határidőket.</p>
         </div>
-        <span className="heading-symbol">
-          <PackageCheck size={28} />
-        </span>
       </div>
       <div className="reservation-filters">
         <label>

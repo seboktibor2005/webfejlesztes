@@ -22,8 +22,7 @@ export function UserEditorPage() {
       </Link>
       <div className="page-heading">
         <div>
-          <span className="eyebrow">ADMINISZTRÁCIÓ</span>
-          <h1>Felhasználó szerkesztése.</h1>
+          <h1>Felhasználó szerkesztése</h1>
           <p>A fiók hozzáférését a szerver is ellenőrzi.</p>
         </div>
       </div>

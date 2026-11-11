@@ -8,6 +8,8 @@ import java.time.Instant;
 import java.util.List;
 
 public interface MaintenanceRepository extends JpaRepository<MaintenancePeriod, Long>, JpaSpecificationExecutor<MaintenancePeriod> {
+    long countByStatus(MaintenanceStatus status);
+
     @Query("select new hu.eszkozpont.equipment.availability.BlockingInterval(m.startsAt, m.endsAt, 'MAINTENANCE') from MaintenancePeriod m where m.equipment.id = :equipmentId and m.status = hu.eszkozpont.maintenance.MaintenanceStatus.OPEN and m.startsAt < :to and m.endsAt > :from")
     List<hu.eszkozpont.equipment.availability.BlockingInterval> findAvailabilityIntervals(Long equipmentId, Instant from, Instant to);
 

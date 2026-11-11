@@ -1,8 +1,9 @@
 .reservation-form-panel {
-  margin: 28px 0 0;
-  padding: 23px;
+  margin: 0;
+  padding: 20px;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 6px;
+  min-width: 0;
   background: white;
 }
 .form-section-heading {
@@ -20,7 +21,7 @@
 .decision-panel > p {
   font-size: 12px;
   line-height: 1.8;
-  color: #68775e;
+  color: var(--muted);
   margin: 14px 0 22px;
 }
 .reservation-form fieldset,
@@ -50,11 +51,11 @@
   min-width: 0;
   padding: 12px;
   background: white;
-  border: 1px solid #d6dfcf;
-  border-radius: 8px;
-  color: #35462e;
+  border: 1px solid #cbd3cb;
+  border-radius: 5px;
+  color: inherit;
   font: inherit;
-  font-size: 12px;
+  font-size: 13px;
 }
 .reservation-form textarea,
 .decision-panel textarea {
@@ -67,8 +68,8 @@
   gap: 14px;
 }
 .input-help {
-  font-size: 11px;
-  color: #69785f;
+  font-size: 12px;
+  color: var(--muted);
   line-height: 1.7;
   display: block;
   font-weight: 400;
@@ -147,7 +148,7 @@
   background: white;
   border: 1px solid var(--border);
   padding: 25px;
-  border-radius: 12px;
+  border-radius: 6px;
 }
 .reservation-detail-grid h2 {
   font-size: 18px;

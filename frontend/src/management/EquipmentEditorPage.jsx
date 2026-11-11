@@ -122,8 +122,7 @@ export function EquipmentEditorPage() {
       </Link>
       <div className="page-heading">
         <div>
-          <span className="eyebrow">INTÉZMÉNYI NYILVÁNTARTÁS</span>
-          <h1>{id ? "Eszköz szerkesztése." : "Új eszköz."}</h1>
+          <h1>{id ? "Eszköz szerkesztése" : "Új eszköz"}</h1>
           <p>Pontos adatok, követhető előzmények.</p>
         </div>
       </div>
@@ -182,11 +181,15 @@ function EquipmentForm({ item, categories, locations, reload }) {
                 },
         },
       ),
-    onSuccess: (saved) => {
+    onSuccess: (saved, command) => {
       setDraft(fields(saved));
       setRetiring(false);
       setReason("");
-      setNotice("Az eszköz adatai mentve.");
+      setNotice(
+        command === "retire"
+          ? "Az eszközt kivontad a használatból."
+          : "Az eszköz adatai mentve.",
+      );
       client.setQueryData(["managed-equipment", String(saved.id)], saved);
       client.invalidateQueries({ queryKey: ["equipment"] });
       client.invalidateQueries({ queryKey: ["availability"] });

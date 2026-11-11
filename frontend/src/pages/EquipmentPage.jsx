@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, MapPin, Tag, Hash, Box } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { api } from "../api/client";
-import { EquipmentArt } from "../components/EquipmentArt";
 import { ErrorState, LoadingCards } from "../components/Feedback";
 import { ReservationForm } from "../reservations/ReservationForm";
 import { AvailabilityCalendar } from "../availability/AvailabilityCalendar";
@@ -39,12 +38,18 @@ export function EquipmentPage() {
         <ErrorState error={result.error} retry={result.refetch} />
       ) : (
         <>
-          <div className="detail-layout">
-            <EquipmentArt code={result.data.inventoryCode} large />
-            <section>
-              <span className="eyebrow">{result.data.category.name}</span>
+          <header className="page-heading">
+            <div>
+              <code className="eyebrow">{result.data.inventoryCode}</code>
               <h1>{result.data.name}</h1>
-              <p className="detail-description">{result.data.description}</p>
+            </div>
+          </header>
+          <div className="detail-layout">
+            <section className="equipment-facts">
+              <h2>Eszközadatok</h2>
+              {result.data.description && (
+                <p className="detail-description">{result.data.description}</p>
+              )}
               <dl className="detail-facts">
                 <div>
                   <dt>
@@ -81,16 +86,15 @@ export function EquipmentPage() {
                   <dd>Aktív eszköz</dd>
                 </div>
               </dl>
-              <div className="detail-note">
-                Az eszköz leltári állapota és az adott időszakra vonatkozó
-                foglalhatósága eltérhet.
-              </div>
-              <ReservationForm
-                key={periodKey}
-                equipmentId={result.data.id}
-                initialPeriod={initialPeriod}
-              />
+              <a className="text-link" href="#availability-heading">
+                Foglaltsági naptár megtekintése
+              </a>
             </section>
+            <ReservationForm
+              key={periodKey}
+              equipmentId={result.data.id}
+              initialPeriod={initialPeriod}
+            />
           </div>
           <AvailabilityCalendar
             key={periodKey}

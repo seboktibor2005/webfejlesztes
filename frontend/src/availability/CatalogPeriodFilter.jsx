@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CalendarSearch } from "lucide-react";
+import { CalendarSearch, ChevronRight } from "lucide-react";
 import { fromBudapestInput, formatDate } from "../reservations/format";
 import { inputPeriod } from "./calendar";
 
@@ -31,14 +31,17 @@ export function CatalogPeriodFilter({ startsAt, endsAt, onApply, onClear }) {
   }
   const applied = inputPeriod({ startsAt, endsAt });
   return (
-    <section className="period-search" aria-labelledby="period-search-title">
-      <div className="period-search-heading">
-        <CalendarSearch size={22} />
-        <div>
-          <h3 id="period-search-title">Mikor lenne rá szükséged?</h3>
-          <p>Keress a kiválasztott időszakra igényelhető eszközök között.</p>
-        </div>
-      </div>
+    <details className="period-search" open={Boolean(startsAt || endsAt)}>
+      <summary className="period-search-heading">
+        <CalendarSearch size={18} aria-hidden="true" />
+        <span>Szűrés időszakra</span>
+        {applied.startsAt && applied.endsAt && (
+          <span className="period-applied" role="status">
+            {formatDate(startsAt)} – {formatDate(endsAt)}
+          </span>
+        )}
+        <ChevronRight className="period-chevron" size={16} aria-hidden="true" />
+      </summary>
       <form onSubmit={apply} className="period-search-form">
         <label>
           Átvétel a kereséshez
@@ -82,11 +85,6 @@ export function CatalogPeriodFilter({ startsAt, endsAt, onApply, onClear }) {
           {error}
         </p>
       )}
-      {applied.startsAt && applied.endsAt && (
-        <p className="period-applied" role="status">
-          Alkalmazott időszak: {formatDate(startsAt)} – {formatDate(endsAt)}
-        </p>
-      )}
-    </section>
+    </details>
   );
 }

@@ -1,15 +1,7 @@
 import { useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
-import {
-  ArrowRight,
-  Check,
-  Eye,
-  EyeOff,
-  ShieldCheck,
-  Sparkles,
-} from "lucide-react";
+import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import { Brand } from "../components/Brand";
-import { EquipmentArt } from "../components/EquipmentArt";
 import { useAuth } from "../auth/AuthContext";
 import { api } from "../api/client";
 
@@ -25,7 +17,14 @@ export function AuthPage({ register = false }) {
   const [error, setError] = useState(null);
   const [pending, setPending] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  if (user) return <Navigate to="/eszkozok" replace />;
+  const requestedPage = location.state?.from;
+  const destination =
+    typeof requestedPage === "string" &&
+    requestedPage.startsWith("/") &&
+    !requestedPage.startsWith("//")
+      ? requestedPage
+      : "/attekintes";
+  if (user) return <Navigate to={destination} replace />;
   async function submit(event) {
     event.preventDefault();
     setError(null);
@@ -43,13 +42,6 @@ export function AuthPage({ register = false }) {
         });
       } else {
         await login({ email, password: values.password });
-        const destination = location.state?.from;
-        navigate(
-          destination?.startsWith("/") && !destination.startsWith("//")
-            ? destination
-            : "/eszkozok",
-          { replace: true },
-        );
       }
     } catch (failure) {
       setError(failure);
@@ -63,63 +55,17 @@ export function AuthPage({ register = false }) {
     error?.errors?.find((e) => e.field === name)?.message;
   return (
     <main className="auth-layout">
-      <section className="auth-story">
-        <Brand light />
-        <div className="auth-story-body">
-          <span className="eyebrow light">
-            <span className="live-dot" />
-            EGYETEMI ESZKÖZTÁR
-          </span>
-          <h1>
-            Az ötlet a tiéd.
-            <br />
-            Az eszköz <em>közös.</em>
-          </h1>
-          <p>
-            Kamerától a fejlesztőkészletig. Találd meg a következő projektedhez
-            illő eszközt egy helyen.
-          </p>
-          <div className="auth-art">
-            <EquipmentArt code="FOTO-001" large />
-            <span className="art-note">
-              <Sparkles size={16} />
-              Egy jó ötlet itt kezdődik.
-            </span>
-          </div>
-          <div className="story-points">
-            <span>
-              <Check size={17} />
-              Átlátható eszköztár
-            </span>
-            <span>
-              <Check size={17} />
-              Egyetemi közösség
-            </span>
-          </div>
-        </div>
-        <span className="auth-footnote">
-          ESZKÖZPONT / ALKOSS TÖBBET, KÖZÖSEN.
-        </span>
-      </section>
       <section className="auth-form-side">
-        <div className="auth-topline">
-          <span>
-            {register ? "Már van fiókod?" : "Most jársz itt először?"}
-          </span>
-          <Link to={register ? "/belepes" : "/regisztracio"}>
-            {register ? "Bejelentkezés" : "Fiók létrehozása"}
-            <ArrowRight size={15} />
-          </Link>
-        </div>
+        <header className="auth-identity">
+          <Brand />
+          <p>Egyetemi eszköztár</p>
+        </header>
         <div className="auth-form-wrap">
-          <div className="small-label">KEZDJÜK AZ ELEJÉN</div>
-          <h2>
-            {register ? "Csatlakozz az alkotókhoz." : "Jó, hogy itt vagy."}
-          </h2>
+          <h1>{register ? "Regisztráció" : "Bejelentkezés"}</h1>
           <p className="auth-intro">
             {register
-              ? "Hozd létre a fiókod, és fedezd fel az egyetemi eszköztárat."
-              : "Jelentkezz be, és nézz körül az eszköztárban."}
+              ? "Eszközfoglaláshoz hozz létre egy fiókot."
+              : "Lépj be az eszközök és a foglalásaid megtekintéséhez."}
           </p>
           {(notice || location.state?.registered) && (
             <div className="notice" role="status">
@@ -139,7 +85,6 @@ export function AuthPage({ register = false }) {
                   onChange={update}
                   required
                   maxLength={100}
-                  placeholder="Ahogy szólíthatunk"
                   aria-invalid={!!fieldError("displayName")}
                 />
                 {fieldError("displayName") && (
@@ -178,9 +123,7 @@ export function AuthPage({ register = false }) {
                   required
                   minLength={register ? 12 : undefined}
                   maxLength={64}
-                  placeholder={
-                    register ? "Legalább 12 karakter" : "A jelszavad"
-                  }
+                  placeholder={register ? "Legalább 12 karakter" : undefined}
                   aria-invalid={!!fieldError("password")}
                 />
                 <button
@@ -208,16 +151,22 @@ export function AuthPage({ register = false }) {
               disabled={pending}
             >
               {pending
-                ? "Egy pillanat…"
+                ? register
+                  ? "Fiók létrehozása…"
+                  : "Bejelentkezés…"
                 : register
                   ? "Fiók létrehozása"
                   : "Bejelentkezés"}
               <ArrowRight size={18} />
             </button>
           </form>
-          <div className="auth-security">
-            <ShieldCheck size={17} />
-            <span>A fiókod és az adataid védve vannak.</span>
+          <div className="auth-topline">
+            <span>
+              {register ? "Már van fiókod?" : "Új fiókra van szükséged?"}
+            </span>
+            <Link to={register ? "/belepes" : "/regisztracio"}>
+              {register ? "Bejelentkezés" : "Regisztráció"}
+            </Link>
           </div>
           <details className="demo-access">
             <summary>Bemutatófiókok helyi kipróbáláshoz</summary>
@@ -233,9 +182,6 @@ export function AuthPage({ register = false }) {
             <small>Csak a helyi demóadatok bekapcsolásakor léteznek.</small>
           </details>
         </div>
-        <footer className="auth-form-footer">
-          Közös eszközök. Saját történetek.
-        </footer>
       </section>
     </main>
   );

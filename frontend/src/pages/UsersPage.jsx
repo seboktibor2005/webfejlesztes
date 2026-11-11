@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { Users, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { api } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
 import { ErrorState } from "../components/Feedback";
@@ -19,13 +19,9 @@ export function UsersPage() {
     <main className="page management-page">
       <div className="page-heading">
         <div>
-          <span className="eyebrow">ADMINISZTRÁCIÓ</span>
-          <h1>Az alkotóközösség.</h1>
+          <h1>Felhasználók</h1>
           <p>Regisztrált felhasználók és jogosultsági szintjeik.</p>
         </div>
-        <span className="heading-symbol">
-          <Users size={30} />
-        </span>
       </div>
       {result.isPending ? (
         <p role="status">Felhasználók betöltése…</p>

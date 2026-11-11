@@ -140,7 +140,7 @@ describe("eszköznyilvántartás", () => {
     await user.selectOptions(screen.getByLabelText("Tárolási hely"), "2");
     await user.click(screen.getByRole("button", { name: "Eszköz mentése" }));
     expect(
-      await screen.findByRole("heading", { name: "Eszköz szerkesztése." }),
+      await screen.findByRole("heading", { name: "Eszköz szerkesztése" }),
     ).toBeInTheDocument();
     expect(JSON.parse(writes()[0][1].body)).toEqual({
       inventoryCode: "new-9",
@@ -219,6 +219,10 @@ describe("eszköznyilvántartás", () => {
       screen.getByRole("button", { name: "Kivonás megerősítése" }),
     );
     expect(await screen.findByText("Kivonva")).toBeInTheDocument();
+    expect(screen.getByText("Az eszközt kivontad a használatból.")).toHaveAttribute(
+      "role",
+      "status",
+    );
     expect(writes()[0][0]).toBe("/api/management/equipment/5/retire");
     expect(JSON.parse(writes()[0][1].body)).toEqual({
       version: 3,

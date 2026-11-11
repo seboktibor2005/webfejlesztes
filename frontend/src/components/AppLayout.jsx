@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet, useMatch } from "react-router-dom";
 import {
   Boxes,
   ClipboardList,
@@ -7,12 +7,12 @@ import {
   LogOut,
   Menu,
   X,
-  ArrowUpRight,
   CalendarDays,
   ListChecks,
   PackageCheck,
   Wrench,
   Tags,
+  LayoutList,
 } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { Brand } from "./Brand";
@@ -24,6 +24,9 @@ export const roleLabels = {
 };
 export function AppLayout() {
   const { user, logout } = useAuth();
+  const reservationDetail = useMatch("/foglalasok/:id");
+  const reviewList = useMatch("/elbiralas");
+  const reviewingReservation = user.role !== "USER" && reservationDetail !== null;
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
@@ -69,25 +72,39 @@ export function AppLayout() {
       )}
       <aside id="main-sidebar" className={`sidebar ${open ? "is-open" : ""}`}>
         <Brand />
-        <div className="workspace-label">
-          <span className="live-dot" />
-          EGYETEMI MŰHELY
-        </div>
-        <div className="nav-label">SAJÁT ESZKÖZTÁR</div>
+        <div className="workspace-label">Egyetemi eszköztár</div>
         <nav aria-label="Fő navigáció">
+          <NavLink to="/attekintes" onClick={() => setOpen(false)}>
+            <LayoutList size={20} />
+            Áttekintés
+          </NavLink>
           <NavLink to="/eszkozok" onClick={() => setOpen(false)}>
             <Boxes size={20} />
             Eszközkatalógus
           </NavLink>
-          <NavLink to="/foglalasok" onClick={() => setOpen(false)}>
+          <NavLink
+            to="/foglalasok"
+            end={reviewingReservation}
+            onClick={() => setOpen(false)}
+          >
             <CalendarDays size={20} />
             Saját foglalások
           </NavLink>
+          {user.role !== "USER" && <div className="nav-label">Kezelés</div>}
           {user.role !== "USER" && (
-            <NavLink to="/elbiralas" onClick={() => setOpen(false)}>
+            <Link
+              to="/elbiralas"
+              className={
+                reviewList || reviewingReservation ? "active" : undefined
+              }
+              aria-current={
+                reviewList ? "page" : reviewingReservation ? "location" : undefined
+              }
+              onClick={() => setOpen(false)}
+            >
               <ListChecks size={20} />
               Igények elbírálása
-            </NavLink>
+            </Link>
           )}
           {user.role !== "USER" && (
             <NavLink to="/kezeles" onClick={() => setOpen(false)}>
@@ -107,6 +124,7 @@ export function AppLayout() {
               Karbantartások
             </NavLink>
           )}
+          {user.role === "ADMIN" && <div className="nav-label">Adminisztráció</div>}
           {user.role === "ADMIN" && (
             <NavLink to="/felhasznalok" onClick={() => setOpen(false)}>
               <Users size={20} />
@@ -121,15 +139,6 @@ export function AppLayout() {
           )}
         </nav>
         <div className="sidebar-bottom">
-          <div className="sidebar-note">
-            <span className="small-label">KÖZÖSEN TÖBBRE MEGYÜNK</span>
-            <p>
-              Egy eszköz.
-              <br />
-              Számtalan lehetőség.
-            </p>
-            <ArrowUpRight size={23} />
-          </div>
           {error && (
             <p className="field-error" role="alert">
               {error}
@@ -159,13 +168,6 @@ export function AppLayout() {
         </div>
       </aside>
       <div className="app-content">
-        <header className="topbar">
-          <span>Az ötlettől az alkotásig.</span>
-          <span className="topbar-role">
-            <span className="live-dot" />
-            {roleLabels[user.role]}
-          </span>
-        </header>
         <Outlet />
       </div>
     </div>

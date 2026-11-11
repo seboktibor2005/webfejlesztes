@@ -7,6 +7,7 @@ import "./loans/loans.css";
 import "./management/management.css";
 import "./management/reference.css";
 import "./availability/availability.css";
+import "./dashboard.css";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>

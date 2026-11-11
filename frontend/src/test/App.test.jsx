@@ -19,7 +19,7 @@ describe("magyar belépési folyamat", () => {
     window.history.replaceState({}, "", "/eszkozok");
     render(<App />);
     expect(
-      await screen.findByRole("heading", { name: "Jó, hogy itt vagy." }),
+      await screen.findByRole("heading", { name: "Bejelentkezés" }),
     ).toBeInTheDocument();
     expect(window.location.pathname).toBe("/belepes");
   });
@@ -41,7 +41,8 @@ describe("magyar belépési folyamat", () => {
       "Hibás e-mail-cím vagy jelszó.",
     );
   });
-  it("valódi belépési válaszból megnyitja a katalógust, és USER elől elrejti az adminmenüt", async () => {
+  it("belépés után visszavisz a korábban kért katalógusra, és USER elől elrejti az adminmenüt", async () => {
+    window.history.replaceState({}, "", "/eszkozok");
     vi.stubGlobal(
       "fetch",
       vi.fn(async (url) => {
@@ -66,7 +67,7 @@ describe("magyar belépési folyamat", () => {
     await user.click(screen.getByRole("button", { name: "Bejelentkezés" }));
     expect(
       await screen.findByRole("heading", {
-        name: "Mi kell a következő ötletedhez?",
+        name: "Eszközkatalógus",
       }),
     ).toBeInTheDocument();
     expect(
@@ -83,5 +84,39 @@ describe("magyar belépési folyamat", () => {
         }),
       ),
     );
+  });
+  it("közvetlen belépés után a személyes áttekintést nyitja meg", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url) => {
+        if (url === "/api/auth/login")
+          return response({
+            accessToken: "test-token",
+            expiresAt: new Date(Date.now() + 100_000).toISOString(),
+            user: { id: 1, displayName: "Minta Anna", role: "USER" },
+          });
+        if (url === "/api/dashboard/me")
+          return response({
+            checkedAt: "2026-10-25T10:00:00Z",
+            pendingCount: 0,
+            activeLoanCount: 0,
+            nextPickup: null,
+            nextReturn: null,
+          });
+        throw new Error("Váratlan végpont: " + url);
+      }),
+    );
+    render(<App />);
+    const user = userEvent.setup();
+    await user.type(screen.getByLabelText("E-mail-cím"), "anna@example.test");
+    await user.type(screen.getByLabelText("Jelszó"), "SajatJelszo2026!");
+    await user.click(screen.getByRole("button", { name: "Bejelentkezés" }));
+    expect(
+      await screen.findByRole("heading", { name: "Áttekintés" }),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByText("Nincs soron következő átvételed."),
+    ).toBeInTheDocument();
+    expect(window.location.pathname).toBe("/attekintes");
   });
 });

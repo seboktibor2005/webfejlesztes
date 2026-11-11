@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Archive, MapPin, Pencil, Plus, Tag, Trash2 } from "lucide-react";
+import { Archive, Pencil, Plus, Tag, Trash2 } from "lucide-react";
 import { api } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
 import { ErrorState } from "../components/Feedback";
@@ -163,13 +163,9 @@ export function ReferenceDataPage({ kind }) {
     <main className="page management-page reference-page">
       <div className="page-heading">
         <div>
-          <span className="eyebrow">AZ ESZKÖZTÁR ALAPJAI</span>
-          <h1>Törzsadatok.</h1>
-          <p>Kategóriák és tárolási helyek, megőrzött kapcsolatokkal.</p>
+          <h1>Törzsadatok</h1>
+          <p>Eszközkategóriák és tárolási helyek kezelése.</p>
         </div>
-        <span className="heading-symbol">
-          {category ? <Tag size={28} /> : <MapPin size={28} />}
-        </span>
       </div>
       <nav className="reference-tabs" aria-label="Törzsadat típusa">
         <Link

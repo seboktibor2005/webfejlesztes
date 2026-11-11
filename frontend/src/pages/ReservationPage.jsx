@@ -123,7 +123,7 @@ export function ReservationPage() {
       </Link>
       <div className="page-heading">
         <div>
-          <span className="eyebrow">FOGLALÁSI IGÉNY · #{reservation.id}</span>
+          <span className="eyebrow">Foglalási igény #{reservation.id}</span>
           <h1>{reservation.equipment.name}</h1>
           <p>
             {reservation.equipment.inventoryCode} ·{" "}

@@ -46,15 +46,11 @@ export function MaintenancePage() {
     <main className="page management-page reservation-page">
       <div className="page-heading">
         <div>
-          <span className="eyebrow">ÜZEMBIZTOS ESZKÖZTÁR</span>
-          <h1>Karbantartások.</h1>
+          <h1>Karbantartások</h1>
           <p>
             Tervezett javítások, műszaki ellenőrzések és sérülési zárolások.
           </p>
         </div>
-        <span className="heading-symbol">
-          <Wrench size={28} />
-        </span>
       </div>
       <div className="management-toolbar">
         <div className="reservation-filters">
@@ -231,8 +227,7 @@ export function MaintenanceCreatePage() {
       </Link>
       <div className="page-heading">
         <div>
-          <span className="eyebrow">TERVEZÉS ÉS JAVÍTÁS</span>
-          <h1>Új karbantartás.</h1>
+          <h1>Új karbantartás</h1>
           <p>
             Jóváhagyott foglalás vagy kint lévő eszköz esetén előbb rendezd az
             ütközést.
@@ -421,7 +416,7 @@ export function MaintenanceDetailPage() {
         <>
           <div className="page-heading">
             <div>
-              <span className="eyebrow">KARBANTARTÁS · #{period.id}</span>
+              <span className="eyebrow">Karbantartás #{period.id}</span>
               <h1>{period.equipment.name}</h1>
               <p>{period.equipment.inventoryCode}</p>
             </div>

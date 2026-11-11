@@ -120,6 +120,7 @@ describe("időszakra szűrt katalógus", () => {
     );
     await screen.findByText("Canon kamera");
     const before = searchCalls().length;
+    await userEvent.click(screen.getByText("Szűrés időszakra"));
     fillPeriod();
     expect(searchCalls()).toHaveLength(before);
     await userEvent.click(
@@ -162,7 +163,10 @@ describe("időszakra szűrt katalógus", () => {
     await userEvent.click(
       screen.getByRole("button", { name: "Időszak törlése" }),
     );
-    await screen.findByText("Az eszköztárban");
+    await screen.findByText("Canon kamera");
+    expect(
+      screen.queryByText("Az időszakra igényelhető"),
+    ).not.toBeInTheDocument();
     expect(screen.getByLabelText("Aktuális cím")).toHaveTextContent(
       "/eszkozok?categoryId=3",
     );
@@ -172,6 +176,7 @@ describe("időszakra szűrt katalógus", () => {
   it("fordított és óraátállításkor nem létező időpontot nem alkalmaz", async () => {
     const apply = vi.fn();
     mount(<CatalogPeriodFilter onApply={apply} onClear={vi.fn()} />);
+    await userEvent.click(screen.getByText("Szűrés időszakra"));
     fillPeriod("2026-11-12T12:00", "2026-11-12T09:00");
     await userEvent.click(
       screen.getByRole("button", { name: "Szabad eszközök keresése" }),
@@ -198,6 +203,7 @@ describe("időszakra szűrt katalógus", () => {
     );
     mount(<CatalogPage />);
     await screen.findByText("Canon kamera");
+    await userEvent.click(screen.getByText("Szűrés időszakra"));
     fillPeriod();
     await userEvent.click(
       screen.getByRole("button", { name: "Szabad eszközök keresése" }),

@@ -2,7 +2,7 @@
   margin: 0 0 24px;
   background: #fff;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 6px;
   padding: 25px;
 }
 .loan-heading {
@@ -35,8 +35,8 @@
 .loan-panel input {
   width: 100%;
   min-width: 0;
-  border: 1px solid #d6dfcf;
-  border-radius: 8px;
+  border: 1px solid #cbd3cb;
+  border-radius: 5px;
   padding: 12px;
   background: #fff;
   color: #35462e;

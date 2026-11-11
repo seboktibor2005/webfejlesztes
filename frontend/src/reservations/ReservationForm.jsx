@@ -54,7 +54,7 @@ export function ReservationForm({ equipmentId, initialPeriod }) {
     >
       <div className="form-section-heading">
         <CalendarPlus size={21} />
-        <h2 id="reservation-form-heading">Igényeld a projektedhez</h2>
+        <h2 id="reservation-form-heading">Foglalási igény</h2>
       </div>
       <p>
         Az igénylést az eszközfelelős bírálja el. A jóváhagyásig az időszak
@@ -115,7 +115,7 @@ export function ReservationForm({ equipmentId, initialPeriod }) {
               minLength={10}
               maxLength={500}
               rows={3}
-              placeholder="Írd le röviden az egyetemi projektedet…"
+              placeholder="Például interjúfelvétel a szemináriumi projekthez"
               aria-invalid={!!errorFor("purpose")}
             />
             {errorFor("purpose") && (
