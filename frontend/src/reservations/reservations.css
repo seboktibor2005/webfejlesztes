@@ -11,13 +11,13 @@
   align-items: center;
   gap: 10px;
   color: var(--primary);
+  margin-bottom: 20px;
 }
 .form-section-heading h2 {
   font-size: 18px;
   margin: 0;
   letter-spacing: -0.5px;
 }
-.reservation-form-panel > p,
 .decision-panel > p {
   font-size: 12px;
   line-height: 1.8;

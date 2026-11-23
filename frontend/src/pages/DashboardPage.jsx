@@ -207,11 +207,6 @@ export function DashboardPage() {
       <header className="page-heading">
         <div>
           <h1>Áttekintés</h1>
-          <p>
-            {management
-              ? "Az egyetemi eszköztár napi munkája."
-              : "A saját foglalásaid és kölcsönzéseid."}
-          </p>
         </div>
         <button
           className="button secondary"

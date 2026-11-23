@@ -13,6 +13,7 @@ import {
   Wrench,
   Tags,
   LayoutList,
+  UserRound,
 } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { Brand } from "./Brand";
@@ -89,6 +90,10 @@ export function AppLayout() {
           >
             <CalendarDays size={20} />
             Saját foglalások
+          </NavLink>
+          <NavLink to="/fiokom" onClick={() => setOpen(false)}>
+            <UserRound size={20} />
+            Fiókom
           </NavLink>
           {user.role !== "USER" && <div className="nav-label">Kezelés</div>}
           {user.role !== "USER" && (

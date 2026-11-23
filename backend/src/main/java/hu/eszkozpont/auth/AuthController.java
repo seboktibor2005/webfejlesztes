@@ -27,4 +27,15 @@ public class AuthController {
 
     @GetMapping("/api/me")
     public UserResponse me(@AuthenticationPrincipal Jwt jwt) { return service.me(Long.parseLong(jwt.getSubject())); }
+
+    @PutMapping("/api/me")
+    public UserResponse updateProfile(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody ProfileUpdateRequest request) {
+        return service.updateProfile(Long.parseLong(jwt.getSubject()), jwt.<Number>getClaim("tokenVersion").longValue(), request);
+    }
+
+    @PostMapping("/api/me/password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void changePassword(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody PasswordChangeRequest request) {
+        service.changePassword(Long.parseLong(jwt.getSubject()), jwt.<Number>getClaim("tokenVersion").longValue(), request);
+    }
 }

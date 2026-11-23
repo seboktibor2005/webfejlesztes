@@ -8,7 +8,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = Utf8LengthValidator.class)
 public @interface Utf8Length {
-    String message() default "A jelszó UTF-8 kódolással legfeljebb 72 bájt lehet.";
+    String message() default "A jelszó túl hosszú. Használj kevesebb karaktert.";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }

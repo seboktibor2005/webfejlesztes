@@ -26,7 +26,7 @@ public class AuthService {
     public UserResponse register(RegisterRequest request) {
         var email = normalizeEmail(request.email());
         if (users.existsByEmail(email)) {
-            throw new ApiException(HttpStatus.CONFLICT, "EMAIL_TAKEN", "Ez az e-mail-cím már regisztrálva van.");
+            throw new ApiException(HttpStatus.CONFLICT, "EMAIL_TAKEN", "Ez az e-mail cím már regisztrálva van.");
         }
         var user = new AppUser();
         user.setDisplayName(request.displayName().strip());
@@ -39,7 +39,7 @@ public class AuthService {
         var user = users.findByEmail(normalizeEmail(request.email())).orElse(null);
         boolean matches = passwords.matches(request.password(), user == null ? dummyHash : user.getPasswordHash());
         if (user == null || !matches || !user.isEnabled()) {
-            throw new ApiException(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS", "Hibás e-mail-cím vagy jelszó.");
+            throw new ApiException(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS", "Hibás e-mail cím vagy jelszó.");
         }
         return tokens.issue(user);
     }
@@ -49,7 +49,40 @@ public class AuthService {
 
     public UserResponse me(long userId) {
         return users.findById(userId).map(mapper::toResponse)
-                .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "INVALID_TOKEN", "Jelentkezz be újra."));
+                .orElseThrow(this::invalidToken);
+    }
+
+    @Transactional
+    public UserResponse updateProfile(long userId, long tokenVersion, ProfileUpdateRequest request) {
+        var user = lockCurrentUser(userId, tokenVersion);
+        user.setDisplayName(request.displayName().strip());
+        return mapper.toResponse(user);
+    }
+
+    @Transactional
+    public void changePassword(long userId, long tokenVersion, PasswordChangeRequest request) {
+        var user = lockCurrentUser(userId, tokenVersion);
+        if (!passwords.matches(request.currentPassword(), user.getPasswordHash())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "INCORRECT_CURRENT_PASSWORD", "A jelenlegi jelszó helytelen.");
+        }
+        if (request.currentPassword().equals(request.newPassword())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "PASSWORD_UNCHANGED", "Az új jelszó térjen el a jelenlegitől.");
+        }
+        user.setPasswordHash(passwords.encode(request.newPassword()));
+        user.setTokenVersion(user.getTokenVersion() + 1);
+    }
+
+    private AppUser lockCurrentUser(long userId, long tokenVersion) {
+        // Kijelentkezés vagy fiókmódosítás a JWT ellenőrzése után is történhet.
+        var user = users.lockById(userId).orElseThrow(this::invalidToken);
+        if (!user.isEnabled() || user.getTokenVersion() != tokenVersion) {
+            throw invalidToken();
+        }
+        return user;
+    }
+
+    private ApiException invalidToken() {
+        return new ApiException(HttpStatus.UNAUTHORIZED, "INVALID_TOKEN", "Jelentkezz be újra.");
     }
 
     private String normalizeEmail(String email) { return email.strip().toLowerCase(Locale.ROOT); }

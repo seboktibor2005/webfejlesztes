@@ -37,6 +37,14 @@ export function AuthProvider({ children }) {
     await api("/auth/logout", { method: "POST", token: session.accessToken });
     clearSession("Sikeresen kijelentkeztél minden eszközön.");
   }
+  async function updateProfile(displayName) {
+    const token = session.accessToken;
+    const user = await api("/me", { method: "PUT", token, body: { displayName } });
+    setSession((current) =>
+      current?.accessToken === token ? { ...current, user } : current,
+    );
+    return user;
+  }
   return (
     <AuthContext.Provider
       value={{
@@ -45,6 +53,7 @@ export function AuthProvider({ children }) {
         notice,
         login,
         logout,
+        updateProfile,
         endSession: clearSession,
       }}
     >

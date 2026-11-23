@@ -77,7 +77,7 @@ export function CatalogPeriodFilter({ startsAt, endsAt, onApply, onClear }) {
         )}
       </form>
       <small className="input-help">
-        Budapesti idő szerint · 1 óra–7 nap · legfeljebb 60 nappal előre. A
+        Budapesti idő szerint · 1 óra–14 nap · legfeljebb 60 nappal előre. A
         keresés nem biztosítja az eszközt.
       </small>
       {error && (

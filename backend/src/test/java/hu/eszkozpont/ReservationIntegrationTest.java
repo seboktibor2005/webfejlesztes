@@ -110,7 +110,7 @@ class ReservationIntegrationTest {
 
     @Test void invalidDatesDurationHorizonAndMinutePrecisionAreRejected() throws Exception {
         for (var period : List.of(new Instant[]{NOW, END}, new Instant[]{START, START},
-                new Instant[]{START, START.plusSeconds(3599)}, new Instant[]{START, START.plus(7, ChronoUnit.DAYS).plusSeconds(60)},
+                new Instant[]{START, START.plusSeconds(3599)}, new Instant[]{START, START.plus(14, ChronoUnit.DAYS).plusSeconds(60)},
                 new Instant[]{NOW.plus(60, ChronoUnit.DAYS).plusSeconds(60), NOW.plus(61, ChronoUnit.DAYS)},
                 new Instant[]{START.plusSeconds(1), END.plusSeconds(1)})) {
             create(ownerToken, itemId, period[0], period[1]).andExpect(status().isBadRequest())
@@ -121,7 +121,10 @@ class ReservationIntegrationTest {
 
     @Test void exactMinimumMaximumAndHorizonBoundariesWork() throws Exception {
         created(ownerToken, itemId, START, START.plus(1, ChronoUnit.HOURS));
-        created(ownerToken, itemId, START, START.plus(7, ChronoUnit.DAYS));
+        var fortnight = new HashMap<String, Object>(request(itemId, START, START.plus(14, ChronoUnit.DAYS)));
+        fortnight.put("purpose", "  x  ");
+        postJson("/api/reservations", ownerToken, fortnight).andExpect(status().isCreated())
+                .andExpect(jsonPath("$.purpose").value("x"));
         var horizon = NOW.plus(60, ChronoUnit.DAYS);
         created(ownerToken, itemId, horizon, horizon.plus(1, ChronoUnit.HOURS));
     }
@@ -134,8 +137,11 @@ class ReservationIntegrationTest {
         postJson("/api/reservations", ownerToken, request).andExpect(status().isBadRequest());
         request.remove("requesterId"); request.put("status", "APPROVED");
         postJson("/api/reservations", ownerToken, request).andExpect(status().isBadRequest());
-        request.remove("status"); request.put("purpose", "         x         ");
-        postJson("/api/reservations", ownerToken, request).andExpect(status().isBadRequest());
+        request.remove("status");
+        for (var purpose : List.of("", "          ", "x".repeat(501))) {
+            request.put("purpose", purpose);
+            postJson("/api/reservations", ownerToken, request).andExpect(status().isBadRequest());
+        }
         assertThat(count("reservation")).isZero();
     }
 

@@ -56,10 +56,6 @@ export function ReservationForm({ equipmentId, initialPeriod }) {
         <CalendarPlus size={21} />
         <h2 id="reservation-form-heading">Foglalási igény</h2>
       </div>
-      <p>
-        Az igénylést az eszközfelelős bírálja el. A jóváhagyásig az időszak
-        nincs biztosítva.
-      </p>
       <form
         onSubmit={(event) => {
           event.preventDefault();
@@ -103,7 +99,7 @@ export function ReservationForm({ equipmentId, initialPeriod }) {
             </label>
           </div>
           <small className="input-help">
-            Budapesti idő szerint · 1 óra–7 nap · legfeljebb 60 nappal előre.
+            Budapesti idő szerint · 1 óra–14 nap · legfeljebb 60 nappal előre.
           </small>
           <label>
             Mire használnád az eszközt?
@@ -112,7 +108,7 @@ export function ReservationForm({ equipmentId, initialPeriod }) {
               value={values.purpose}
               onChange={update}
               required
-              minLength={10}
+              minLength={1}
               maxLength={500}
               rows={3}
               placeholder="Például interjúfelvétel a szemináriumi projekthez"

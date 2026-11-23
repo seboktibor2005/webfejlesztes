@@ -14,8 +14,8 @@ public final class ReservationPeriods {
             throw invalid("Az átvétel jövőbeli, legfeljebb 60 nappal későbbi időpont legyen.");
         }
         var duration = Duration.between(start, end);
-        if (duration.compareTo(Duration.ofHours(1)) < 0 || duration.compareTo(Duration.ofDays(7)) > 0) {
-            throw invalid("A foglalás időtartama legalább 1 óra és legfeljebb 7 nap lehet.");
+        if (duration.compareTo(Duration.ofHours(1)) < 0 || duration.compareTo(Duration.ofDays(14)) > 0) {
+            throw invalid("A foglalás időtartama legalább 1 óra és legfeljebb 14 nap lehet.");
         }
         if (start.getNano() != 0 || end.getNano() != 0 || start.getEpochSecond() % 60 != 0 || end.getEpochSecond() % 60 != 0) {
             throw invalid("Az időpontokat egész percre pontosan add meg.");

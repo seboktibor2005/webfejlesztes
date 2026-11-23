@@ -13,8 +13,20 @@ beforeEach(() => {
 });
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
 });
 describe("magyar belépési folyamat", () => {
+  it.each(["true", "false"])(
+    "a demófiókok megjelenítésének kapcsolója %s",
+    (value) => {
+      vi.stubEnv("VITE_SHOW_DEMO_ACCOUNTS", value);
+      render(<App />);
+      expect(
+        !!screen.queryByText("Bemutatófiókok helyi kipróbáláshoz"),
+      ).toBe(value === "true");
+    },
+  );
+
   it("védi a katalógust és belépést kér", async () => {
     window.history.replaceState({}, "", "/eszkozok");
     render(<App />);
@@ -29,16 +41,16 @@ describe("magyar belépési folyamat", () => {
       vi
         .fn()
         .mockResolvedValue(
-          response({ detail: "Hibás e-mail-cím vagy jelszó." }, 401),
+          response({ detail: "Hibás e-mail cím vagy jelszó." }, 401),
         ),
     );
     render(<App />);
     const user = userEvent.setup();
-    await user.type(screen.getByLabelText("E-mail-cím"), "anna@example.test");
+    await user.type(screen.getByLabelText("E-mail cím"), "anna@example.test");
     await user.type(screen.getByLabelText("Jelszó"), "rosszjelszo");
     await user.click(screen.getByRole("button", { name: "Bejelentkezés" }));
     expect(await screen.findByRole("alert")).toHaveTextContent(
-      "Hibás e-mail-cím vagy jelszó.",
+      "Hibás e-mail cím vagy jelszó.",
     );
   });
   it("belépés után visszavisz a korábban kért katalógusra, és USER elől elrejti az adminmenüt", async () => {
@@ -62,7 +74,7 @@ describe("magyar belépési folyamat", () => {
     );
     render(<App />);
     const user = userEvent.setup();
-    await user.type(screen.getByLabelText("E-mail-cím"), "anna@example.test");
+    await user.type(screen.getByLabelText("E-mail cím"), "anna@example.test");
     await user.type(screen.getByLabelText("Jelszó"), "SajatJelszo2026!");
     await user.click(screen.getByRole("button", { name: "Bejelentkezés" }));
     expect(
@@ -108,7 +120,7 @@ describe("magyar belépési folyamat", () => {
     );
     render(<App />);
     const user = userEvent.setup();
-    await user.type(screen.getByLabelText("E-mail-cím"), "anna@example.test");
+    await user.type(screen.getByLabelText("E-mail cím"), "anna@example.test");
     await user.type(screen.getByLabelText("Jelszó"), "SajatJelszo2026!");
     await user.click(screen.getByRole("button", { name: "Bejelentkezés" }));
     expect(
@@ -118,5 +130,84 @@ describe("magyar belépési folyamat", () => {
       await screen.findByText("Nincs soron következő átvételed."),
     ).toBeInTheDocument();
     expect(window.location.pathname).toBe("/attekintes");
+  });
+});
+
+describe("saját fiók", () => {
+  const account = {
+    id: 1,
+    email: "anna@example.test",
+    displayName: "Minta Anna",
+    role: "USER",
+  };
+
+  async function openProfile(handleRequest) {
+    window.history.replaceState({}, "", "/fiokom");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url, options) => {
+        if (url === "/api/auth/login")
+          return response({
+            accessToken: "test-token",
+            expiresAt: new Date(Date.now() + 100_000).toISOString(),
+            user: account,
+          });
+        return handleRequest(url, options);
+      }),
+    );
+    render(<App />);
+    const user = userEvent.setup();
+    await user.type(screen.getByLabelText("E-mail cím"), account.email);
+    await user.type(screen.getByLabelText("Jelszó"), "SajatJelszo2026!");
+    await user.click(screen.getByRole("button", { name: "Bejelentkezés" }));
+    await screen.findByRole("heading", { name: "Fiókom" });
+    return user;
+  }
+
+  it("a megjelenített nevet a munkamenet megtartásával frissíti", async () => {
+    const save = vi.fn(() => response({ ...account, displayName: "Kovács Anna" }));
+    const user = await openProfile(save);
+    const input = screen.getByLabelText("Megjelenített név");
+    await user.clear(input);
+    await user.type(input, "Kovács Anna");
+    await user.click(screen.getByRole("button", { name: "Név mentése" }));
+    expect(await screen.findByText("A neved frissült.")).toBeInTheDocument();
+    expect(screen.getByText("Kovács Anna")).toBeInTheDocument();
+    expect(save).toHaveBeenCalledWith(
+      "/api/me",
+      expect.objectContaining({
+        method: "PUT",
+        body: JSON.stringify({ displayName: "Kovács Anna" }),
+      }),
+    );
+  });
+
+  it("eltérő megerősítést jelez, sikeres jelszócsere után új belépést kér", async () => {
+    const change = vi.fn(() => response(null, 204));
+    const user = await openProfile(change);
+    const confirmation = screen.getByLabelText("Új jelszó megerősítése");
+    const submit = screen.getByRole("button", { name: "Jelszó módosítása" });
+    await user.type(screen.getByLabelText("Jelenlegi jelszó"), "SajatJelszo2026!");
+    await user.type(screen.getByLabelText("Új jelszó", { exact: true }), "MasikJelszo2026!");
+    await user.type(confirmation, "ElirasJelszo2026!");
+    await user.click(submit);
+    expect(screen.getByRole("alert")).toHaveTextContent("A két új jelszó nem egyezik.");
+    expect(change).not.toHaveBeenCalled();
+    await user.clear(confirmation);
+    await user.type(confirmation, "MasikJelszo2026!");
+    await user.click(submit);
+    expect(await screen.findByRole("heading", { name: "Bejelentkezés" })).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("Lépj be az új jelszóval.");
+    expect(change).toHaveBeenCalledTimes(1);
+    expect(change).toHaveBeenCalledWith(
+      "/api/me/password",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          currentPassword: "SajatJelszo2026!",
+          newPassword: "MasikJelszo2026!",
+        }),
+      }),
+    );
   });
 });

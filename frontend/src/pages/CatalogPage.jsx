@@ -93,11 +93,6 @@ export function CatalogPage({ management = false }) {
       <div className="page-heading">
         <div>
           <h1>{management ? "Eszközállomány" : "Eszközkatalógus"}</h1>
-          <p>
-            {management
-              ? "Az aktív és a kivont eszközök nyilvántartása."
-              : "Itt kereshetsz kölcsönözhető eszközt az egyetemi munkádhoz."}
-          </p>
         </div>
         {management && (
           <Link className="button primary" to="/kezeles/uj">

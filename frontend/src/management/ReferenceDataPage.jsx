@@ -164,7 +164,6 @@ export function ReferenceDataPage({ kind }) {
       <div className="page-heading">
         <div>
           <h1>Törzsadatok</h1>
-          <p>Eszközkategóriák és tárolási helyek kezelése.</p>
         </div>
       </div>
       <nav className="reference-tabs" aria-label="Törzsadat típusa">

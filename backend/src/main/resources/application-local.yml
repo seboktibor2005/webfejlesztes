@@ -1,5 +1,5 @@
 app:
-  demo-data: true
+  demo-data: ${DEMO_DATA_ENABLED:true}
   cors-origin: ${FRONTEND_ORIGIN:http://localhost:5173,http://127.0.0.1:5173}
 springdoc:
   api-docs:

@@ -33,11 +33,6 @@ export function ReservationsPage({ management = false }) {
       <div className="page-heading">
         <div>
           <h1>{management ? "Igények elbírálása" : "Saját foglalások"}</h1>
-          <p>
-            {management
-              ? "Bíráld el a beérkező igényeket. Az ütközéseket a rendszer a jóváhagyáskor is ellenőrzi."
-              : "Kövesd az igényléseidet és a hozzájuk tartozó döntéseket."}
-          </p>
         </div>
       </div>
       <div className="reservation-filters">

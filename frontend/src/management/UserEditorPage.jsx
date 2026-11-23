@@ -23,7 +23,6 @@ export function UserEditorPage() {
       <div className="page-heading">
         <div>
           <h1>Felhasználó szerkesztése</h1>
-          <p>A fiók hozzáférését a szerver is ellenőrzi.</p>
         </div>
       </div>
       {result.isPending ? (
@@ -83,10 +82,6 @@ function UserForm({ original, reload }) {
         <ShieldCheck size={20} />
         {original.email}
       </h2>
-      <p className="input-help">
-        Az e-mail-cím és a jelszó ezen a felületen nem módosítható. A rendszer
-        megvédi az utolsó aktív adminisztrátort.
-      </p>
       {notice && (
         <div className="notice" role="status">
           {notice}

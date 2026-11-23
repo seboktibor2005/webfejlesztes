@@ -55,10 +55,6 @@ export function AvailabilityCalendar({ equipmentId, initialStart }) {
           <h2 id="availability-heading">
             <CalendarDays size={23} /> Foglaltsági naptár
           </h2>
-          <p>
-            Jóváhagyott időszakok és nyitott karbantartások, budapesti idő
-            szerint.
-          </p>
         </div>
         <button
           className="button secondary"
@@ -192,9 +188,7 @@ export function AvailabilityCalendar({ equipmentId, initialStart }) {
           </div>
           <p className="calendar-footnote">
             Pillanatnyi állapot · Ellenőrizve:{" "}
-            {formatDate(result.data.checkedAt)}. Az igénylés és a jóváhagyás új
-            ellenőrzést végez. A naptár mások nevét és igénylésük célját nem
-            mutatja.
+            {formatDate(result.data.checkedAt)}
           </p>
         </>
       )}

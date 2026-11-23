@@ -123,7 +123,6 @@ export function EquipmentEditorPage() {
       <div className="page-heading">
         <div>
           <h1>{id ? "Eszköz szerkesztése" : "Új eszköz"}</h1>
-          <p>Pontos adatok, követhető előzmények.</p>
         </div>
       </div>
       {error ? (

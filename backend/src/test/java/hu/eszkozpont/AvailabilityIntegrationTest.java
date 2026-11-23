@@ -146,14 +146,14 @@ class AvailabilityIntegrationTest {
     @Test void searchRequiresBothDatesAndValidReservationPeriods() throws Exception {
         mvc.perform(get("/api/equipment").header("Authorization", "Bearer " + userToken).param("startsAt", START.toString())).andExpect(status().isBadRequest());
         mvc.perform(get("/api/equipment").header("Authorization", "Bearer " + userToken).param("endsAt", END.toString())).andExpect(status().isBadRequest());
-        for (Instant end : List.of(START, START.minusSeconds(3600), START.plusSeconds(3540), START.plus(7, ChronoUnit.DAYS).plusSeconds(60), END.plusSeconds(1))) {
+        for (Instant end : List.of(START, START.minusSeconds(3600), START.plusSeconds(3540), START.plus(14, ChronoUnit.DAYS).plusSeconds(60), END.plusSeconds(1))) {
             search(START, end).andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("INVALID_PERIOD"));
         }
         search(NOW, NOW.plusSeconds(3600)).andExpect(status().isBadRequest());
         search(NOW.plus(60, ChronoUnit.DAYS).plusSeconds(60), NOW.plus(60, ChronoUnit.DAYS).plusSeconds(3660)).andExpect(status().isBadRequest());
         search(START.plusNanos(1), END).andExpect(status().isBadRequest());
         search(START, START.plusSeconds(3600)).andExpect(status().isOk());
-        search(NOW.plus(60, ChronoUnit.DAYS), NOW.plus(67, ChronoUnit.DAYS)).andExpect(status().isOk());
+        search(NOW.plus(60, ChronoUnit.DAYS), NOW.plus(74, ChronoUnit.DAYS)).andExpect(status().isOk());
     }
 
     @Test void unfilteredCatalogueStillListsBusyEquipment() throws Exception {

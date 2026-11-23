@@ -75,7 +75,7 @@ describe("foglalás és elbírálás felülete", () => {
     },
   );
 
-  it("az igényt budapesti időpontból, tulajdonos és állapot beküldése nélkül adja fel", async () => {
+  it("14 napos igényt egykarakteres céllal, budapesti időpontból ad fel", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue(response({ id: 42 }, 201)),
@@ -85,12 +85,12 @@ describe("foglalás és elbírálás felülete", () => {
       target: { value: "2026-11-12T09:00" },
     });
     fireEvent.input(screen.getByLabelText("Visszahozás időpontja"), {
-      target: { value: "2026-11-12T12:00" },
+      target: { value: "2026-11-26T09:00" },
     });
     const user = userEvent.setup();
     await user.type(
       screen.getByLabelText("Mire használnád az eszközt?"),
-      "Egyetemi interjúprojekt felvétele.",
+      "x",
     );
     await user.click(
       screen.getByRole("button", { name: "Foglalási igény küldése" }),
@@ -103,8 +103,8 @@ describe("foglalás és elbírálás felülete", () => {
     expect(JSON.parse(options.body)).toEqual({
       equipmentId: 1,
       startsAt: "2026-11-12T08:00:00.000Z",
-      endsAt: "2026-11-12T11:00:00.000Z",
-      purpose: "Egyetemi interjúprojekt felvétele.",
+      endsAt: "2026-11-26T08:00:00.000Z",
+      purpose: "x",
     });
   });
 

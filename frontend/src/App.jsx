@@ -13,6 +13,7 @@ import { AppLayout } from "./components/AppLayout";
 import { AuthPage } from "./pages/AuthPage";
 import { CatalogPage } from "./pages/CatalogPage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { ProfilePage } from "./pages/ProfilePage";
 import { EquipmentPage } from "./pages/EquipmentPage";
 import { UsersPage } from "./pages/UsersPage";
 import { ReservationsPage } from "./pages/ReservationsPage";
@@ -67,6 +68,7 @@ export default function App() {
             <Route element={<Protected />}>
               <Route element={<AppLayout />}>
                 <Route path="/attekintes" element={<DashboardPage />} />
+                <Route path="/fiokom" element={<ProfilePage />} />
                 <Route
                   path="/eszkozok"
                   element={<CatalogPage key="catalog" />}

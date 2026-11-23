@@ -213,12 +213,6 @@ code {
 }
 .auth-form-wrap h1 {
   font-size: 27px;
-  margin-bottom: 8px;
-}
-.auth-intro {
-  font-size: 14px;
-  color: var(--muted);
-  line-height: 1.6;
   margin-bottom: 24px;
 }
 .auth-form {

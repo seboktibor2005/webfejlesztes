@@ -20,7 +20,6 @@ export function UsersPage() {
       <div className="page-heading">
         <div>
           <h1>Felhasználók</h1>
-          <p>Regisztrált felhasználók és jogosultsági szintjeik.</p>
         </div>
       </div>
       {result.isPending ? (
@@ -37,7 +36,7 @@ export function UsersPage() {
               <thead>
                 <tr>
                   <th>Név</th>
-                  <th>E-mail-cím</th>
+                  <th>E-mail cím</th>
                   <th>Szerepkör</th>
                   <th>Állapot</th>
                   <th>Szerkesztés</th>

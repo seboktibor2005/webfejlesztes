@@ -8,7 +8,7 @@ public record ReservationCreateRequest(
         @NotNull(message = "Add meg az átvétel időpontját.") Instant startsAt,
         @NotNull(message = "Add meg a visszahozás időpontját.") Instant endsAt,
         @NotBlank(message = "Írd le a felhasználás célját.")
-        @Size(min = 10, max = 500, message = "A cél leírása 10–500 karakter legyen.") String purpose) {
+        @Size(min = 1, max = 500, message = "A cél leírása 1–500 karakter legyen.") String purpose) {
     public ReservationCreateRequest {
         if (purpose != null) purpose = purpose.strip();
     }

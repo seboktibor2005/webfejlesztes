@@ -47,9 +47,6 @@ export function MaintenancePage() {
       <div className="page-heading">
         <div>
           <h1>Karbantartások</h1>
-          <p>
-            Tervezett javítások, műszaki ellenőrzések és sérülési zárolások.
-          </p>
         </div>
       </div>
       <div className="management-toolbar">
@@ -228,10 +225,6 @@ export function MaintenanceCreatePage() {
       <div className="page-heading">
         <div>
           <h1>Új karbantartás</h1>
-          <p>
-            Jóváhagyott foglalás vagy kint lévő eszköz esetén előbb rendezd az
-            ütközést.
-          </p>
         </div>
       </div>
       <section className="editor-panel">

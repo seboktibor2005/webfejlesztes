@@ -62,11 +62,6 @@ export function AuthPage({ register = false }) {
         </header>
         <div className="auth-form-wrap">
           <h1>{register ? "Regisztráció" : "Bejelentkezés"}</h1>
-          <p className="auth-intro">
-            {register
-              ? "Eszközfoglaláshoz hozz létre egy fiókot."
-              : "Lépj be az eszközök és a foglalásaid megtekintéséhez."}
-          </p>
           {(notice || location.state?.registered) && (
             <div className="notice" role="status">
               {location.state?.registered
@@ -95,7 +90,7 @@ export function AuthPage({ register = false }) {
               </label>
             )}
             <label>
-              E-mail-cím
+              E-mail cím
               <input
                 name="email"
                 type="email"
@@ -168,19 +163,21 @@ export function AuthPage({ register = false }) {
               {register ? "Bejelentkezés" : "Regisztráció"}
             </Link>
           </div>
-          <details className="demo-access">
-            <summary>Bemutatófiókok helyi kipróbáláshoz</summary>
-            <p>
-              Hallgató: anna@eszkozpont.test
-              <br />
-              Eszközfelelős: kezelo@eszkozpont.test
-              <br />
-              Admin: admin@eszkozpont.test
-              <br />
-              Jelszó: <code>EszkozPont2026!</code>
-            </p>
-            <small>Csak a helyi demóadatok bekapcsolásakor léteznek.</small>
-          </details>
+          {import.meta.env.DEV &&
+            import.meta.env.VITE_SHOW_DEMO_ACCOUNTS !== "false" && (
+              <details className="demo-access">
+                <summary>Bemutatófiókok helyi kipróbáláshoz</summary>
+                <p>
+                  Hallgató: anna@eszkozpont.test
+                  <br />
+                  Eszközfelelős: kezelo@eszkozpont.test
+                  <br />
+                  Admin: admin@eszkozpont.test
+                  <br />
+                  Jelszó: <code>EszkozPont2026!</code>
+                </p>
+              </details>
+            )}
         </div>
       </section>
     </main>

@@ -27,7 +27,6 @@ export function LoansPage() {
       <div className="page-heading">
         <div>
           <h1>Kölcsönzések</h1>
-          <p>Kövesd az átadott eszközöket és a visszahozási határidőket.</p>
         </div>
       </div>
       <div className="reservation-filters">

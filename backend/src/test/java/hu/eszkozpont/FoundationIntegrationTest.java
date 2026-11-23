@@ -103,6 +103,50 @@ class FoundationIntegrationTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON));
     }
 
+    @Test void profileUpdateChangesOnlyTheAuthenticatedUsersNameAndKeepsTheirSession() throws Exception {
+        mvc.perform(put("/api/me").contentType(MediaType.APPLICATION_JSON).content("{\"displayName\":\"Név\"}"))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(put("/api/me").header("Authorization", "Bearer " + userToken).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"displayName\":\"Név\",\"role\":\"ADMIN\"}"))
+                .andExpect(status().isBadRequest());
+        mvc.perform(put("/api/me").header("Authorization", "Bearer " + userToken).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"displayName\":\"  Kovács Anna  \"}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.displayName").value("Kovács Anna"))
+                .andExpect(jsonPath("$.email").value("user@test.example")).andExpect(jsonPath("$.role").value("USER"));
+        mvc.perform(get("/api/me").header("Authorization", "Bearer " + userToken))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.displayName").value("Kovács Anna"));
+        mvc.perform(get("/api/me").header("Authorization", "Bearer " + managerToken))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.displayName").value("Teszt Felhasználó"));
+    }
+
+    @Test void passwordChangeChecksTheCurrentPasswordAndRevokesAllPreviousSessions() throws Exception {
+        var email = "user@test.example";
+        var previousPassword = "EszkozPont2026!";
+        var nextPassword = "UjJelszo2026!";
+        var secondLogin = login(email, previousPassword).andExpect(status().isOk()).andReturn().getResponse();
+        var secondToken = json.readTree(secondLogin.getContentAsString()).get("accessToken").asText();
+        mvc.perform(post("/api/me/password").contentType(MediaType.APPLICATION_JSON)
+                .content(json.writeValueAsString(Map.of("currentPassword", previousPassword, "newPassword", nextPassword))))
+                .andExpect(status().isUnauthorized());
+        changePassword("helytelen jelszó", nextPassword)
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("INCORRECT_CURRENT_PASSWORD"))
+                .andExpect(content().string(not(containsString(nextPassword))));
+        changePassword(previousPassword, "á".repeat(40)).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[*].field", hasItem("newPassword")));
+        changePassword(previousPassword, previousPassword).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("PASSWORD_UNCHANGED"));
+        changePassword(previousPassword, nextPassword).andExpect(status().isNoContent());
+        for (var token : List.of(userToken, secondToken)) {
+            mvc.perform(get("/api/me").header("Authorization", "Bearer " + token)).andExpect(status().isUnauthorized());
+        }
+        var user = users.findByEmail(email).orElseThrow();
+        assertThat(user.getTokenVersion()).isEqualTo(1);
+        assertThat(passwords.matches(nextPassword, user.getPasswordHash())).isTrue();
+        login(email, previousPassword).andExpect(status().isUnauthorized());
+        login(email, nextPassword).andExpect(status().isOk());
+        mvc.perform(get("/api/me").header("Authorization", "Bearer " + managerToken)).andExpect(status().isOk());
+    }
+
     @Test void disabledUserAndChangedRoleInvalidateExistingTokens() throws Exception {
         jdbc.update("UPDATE app_user SET enabled=false WHERE email='user@test.example'");
         mvc.perform(get("/api/me").header("Authorization", "Bearer " + userToken)).andExpect(status().isUnauthorized());
@@ -192,6 +236,12 @@ class FoundationIntegrationTest {
     private ResultActions login(String email, String password) throws Exception {
         return mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
                 .content(json.writeValueAsString(Map.of("email", email, "password", password))));
+    }
+
+    private ResultActions changePassword(String currentPassword, String newPassword) throws Exception {
+        return mvc.perform(post("/api/me/password").header("Authorization", "Bearer " + userToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json.writeValueAsString(Map.of("currentPassword", currentPassword, "newPassword", newPassword))));
     }
     private String createAndLogin(String email, Role role) throws Exception {
         var user = new AppUser(); user.setDisplayName("Teszt Felhasználó"); user.setEmail(email);
